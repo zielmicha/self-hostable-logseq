@@ -12,6 +12,13 @@ import {
 import Debug from 'debug'
 import { snakeCase } from 'snake-case'
 
+declare global {
+  interface Window {
+    __LSP__HOST__: boolean
+    logseq: ILSPluginUser
+  }
+}
+
 const debug = Debug('LSPlugin:user')
 
 const app: Partial<IAppProxy> = {}
@@ -156,12 +163,9 @@ export function setupPluginUserInstance (
   return new LSPluginUser(pluginBaseInfo, pluginCaller)
 }
 
-// @ts-ignore
 if (window.__LSP__HOST__ == null) { // Entry of iframe mode
   debug('Entry of iframe mode.')
 
   const caller = new LSPluginCaller(null)
-
-  //@ts-ignore
-  window.logseq = window.LSPluginUser = setupPluginUserInstance({} as any, caller)
+  window.logseq = setupPluginUserInstance({} as any, caller)
 }

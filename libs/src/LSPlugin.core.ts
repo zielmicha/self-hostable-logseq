@@ -9,6 +9,12 @@ import * as path from 'path'
 
 const debug = Debug('LSPlugin:core')
 
+declare global {
+  interface Window {
+    LSPluginCore: LSPluginCore
+  }
+}
+
 type DeferredActor = ReturnType<typeof deferred>
 type LSPluginCoreOptions = {
   localUserConfigRoot: string
@@ -827,7 +833,6 @@ function setupPluginCore (options: any) {
 
   debug('=== 🔗 Setup Logseq Plugin System 🔗 ===')
 
-  // @ts-ignore
   window.LSPluginCore = pluginCore
 }
 
