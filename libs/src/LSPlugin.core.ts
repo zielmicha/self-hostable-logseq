@@ -383,7 +383,7 @@ class PluginLocal
     try {
       let installPackageThemes: () => Promise<void> = () => Promise.resolve()
 
-      if (!this.options.entry) { // Themes package no include entry
+      if (!this.options.entry) { // Themes package no entry field
         installPackageThemes = await this._preparePackageConfigs()
       }
 
