@@ -4,6 +4,7 @@
             [frontend.components.file :as file]
             [frontend.components.page :as page]
             [frontend.components.diff :as diff]
+            [frontend.components.plugins :as plugins]
             [frontend.components.journal :as journal]
             [frontend.components.settings :as settings]
             [frontend.components.external :as external]
@@ -65,4 +66,8 @@
 
    ["/my-publishing"
     {:name :my-publishing
-     :view publishing/my-publishing}]])
+     :view publishing/my-publishing}]
+
+   ["/plugins"
+    {:name :plugins
+     :view plugins/installed-page}]])

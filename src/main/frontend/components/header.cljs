@@ -15,6 +15,7 @@
             [frontend.components.repo :as repo]
             [frontend.components.search :as search]
             [frontend.components.export :as export]
+            [frontend.components.plugins :as plugins]
             [frontend.handler.project :as project-handler]
             [frontend.handler.page :as page-handler]
             [frontend.handler.web.nfs :as nfs]
@@ -71,6 +72,7 @@
 (rum/defc dropdown-menu < rum/reactive
   [{:keys [me current-repo t default-home]}]
   (let [projects (state/sub [:me :projects])
+        developer-mode? (state/sub [:ui/developer-mode?])
         logged? (state/logged?)]
     (ui/dropdown-with-links
      (fn [{:keys [toggle-fn]}]
@@ -126,6 +128,14 @@
           :options {:on-click #(ui-handler/toggle-settings-modal!)}
           :icon svg/settings-sm})
 
+       (when developer-mode?
+         {:title (t :plugins)
+          :options {:href (rfe/href :plugins)}})
+
+       (when developer-mode?
+         {:title (t :themes)
+          :options {:on-click #(plugins/open-select-theme!)}})
+
        (when current-repo
          {:title (t :export)
           :options {:on-click #(state/set-modal! export/export)}
@@ -148,7 +158,7 @@
       (remove nil?))
      ;; {:links-footer (when (and (util/electron?) (not logged?))
      ;;                  [:div.px-2.py-2 (login logged?)])}
-     )))
+)))
 
 (rum/defc header
   < rum/reactive

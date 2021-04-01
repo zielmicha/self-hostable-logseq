@@ -102,7 +102,7 @@
   (get-files path))
 
 (defmethod handle :persistent-dbs-saved [window _]
-  (async/put! state/persistent-dbs-chan true )
+  (async/put! state/persistent-dbs-chan true)
   true)
 
 (defn- get-file-ext
@@ -156,6 +156,18 @@
   (when dir
     (watch-dir! window dir)))
 
+(defmethod handle :openDialogSync [^js window _messages]
+  (let [result (.showOpenDialogSync dialog (bean/->js
+                                            {:properties ["openDirectory"]}))
+        path (first result)]
+    path))
+
+(defmethod handle :getLogseqUserRoot []
+  (let [lg-dir (str (.getPath app "home") "/.logseq")]
+    (if-not (fs/existsSync lg-dir)
+      (and (fs/mkdirSync lg-dir) lg-dir)
+      lg-dir)))
+
 (defmethod handle :default [args]
   (println "Error: no ipc handler for: " (bean/->js args)))
 
@@ -169,7 +181,7 @@
                  (catch js/Error e
                    (when-not (contains? #{"mkdir" "stat"} (nth args-js 0))
                      (println "IPC error: " {:event event
-                                            :args args-js}
-                             e))
+                                             :args args-js}
+                              e))
                    e))))
     #(.removeHandler ipcMain main-channel)))
