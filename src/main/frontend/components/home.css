@@ -1,0 +1,5 @@
+.my-btn {
+  @apply border rounded px-3 py-1 hover:opacity-50 active:opacity-100;
+
+  color: green;
+}

@@ -1,0 +1,98 @@
+.cp__plugins {
+  &-page-installed {
+    min-height: 60vh;
+    padding-top: 20px;
+
+    > h1 {
+      padding: 20px 0;
+      font-size: 38px;
+    }
+
+    > .lists {
+      @apply w-full grid grid-flow-row gap-3;
+
+      > .it {
+        @apply flex py-3 px-1 rounded-sm;
+
+        background-color: var(--ls-secondary-background-color);
+
+        svg {
+          width: 60px;
+          height: 60px;
+          opacity: .4;
+        }
+
+        .link-block {
+          cursor: pointer;
+
+          &:active {
+            opacity: .8;
+          }
+        }
+
+        > .l {
+          padding: 8px;
+        }
+
+        > .r {
+          flex: 1;
+          position: relative;
+          min-height: 100px;
+
+          p {
+            @apply py-1 m-0;
+          }
+
+          .ctl {
+            @apply flex pl-2 items-center justify-between absolute w-full;
+
+            bottom: -5px;
+            right: 8px;
+
+            .de {
+              font-size: 10px;
+              padding: 0 5px;
+              border-radius: 2px;
+              opacity: .3;
+              user-select: none;
+              transition: none;
+
+              &.err {
+                @apply text-red-500 opacity-100;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.cp__themes {
+  &-installed {
+    min-width: 480px;
+
+    > .it {
+      background-color: var(--ls-primary-background-color);
+    }
+  }
+}
+
+.lsp-iframe-sandbox, .lsp-shadow-sandbox {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  visibility: hidden;
+  height: 0;
+  width: 0;
+  padding: 0;
+  margin: 0;
+
+  &.visible {
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+    visibility: visible;
+  }
+}
