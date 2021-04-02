@@ -9,25 +9,31 @@
     }
 
     > .lists {
-      @apply w-full grid grid-flow-row gap-3;
+      @apply w-full grid grid-flow-row gap-3 pt-1;
 
       > .it {
-        @apply flex py-3 px-1 rounded-sm;
+        @apply flex py-3 px-1 rounded-md;
 
         background-color: var(--ls-secondary-background-color);
+        height: 180px;
 
         svg {
-          width: 60px;
-          height: 60px;
+          width: 70px;
+          height: 70px;
           opacity: .4;
         }
 
-        .link-block {
+        .head {
           cursor: pointer;
 
           &:active {
             opacity: .8;
           }
+        }
+
+        .desc {
+          height: 70px;
+          overflow: hidden;
         }
 
         > .l {
@@ -37,7 +43,6 @@
         > .r {
           flex: 1;
           position: relative;
-          min-height: 100px;
 
           p {
             @apply py-1 m-0;
@@ -46,7 +51,7 @@
           .ctl {
             @apply flex pl-2 items-center justify-between absolute w-full;
 
-            bottom: -5px;
+            bottom: -3px;
             right: 8px;
 
             .de {

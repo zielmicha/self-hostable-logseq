@@ -66,7 +66,7 @@
         selected-unpacked-pkg (state/sub :plugin/selected-unpacked-pkg)]
     [:div.cp__plugins-page-installed
      [:h1 "Installed Plugins"]
-     [:div.mb-4.flex.items-center.justify-between
+     [:div.mb-6.flex.items-center.justify-between
       (ui/button
        "Load unpacked plugin"
        :intent "logseq"
@@ -83,16 +83,21 @@
                        (js/apis.openPath (str root "/preferences.json"))))))]
 
      [:div.lists.grid-cols-1.md:grid-cols-2.lg:grid-cols-3
-      (for [[_ {:keys [id name settings version url]}] installed-plugins]
+      (for [[_ {:keys [id name settings version url description author]}] installed-plugins]
         (let [disabled (:disabled settings)]
           [:div.it {:key id}
-           [:div.l.link-block {:on-click #(plugin-handler/open-readme! url simple-markdown-display)} svg/folder]
+           [:div.l.link-block
+            {:on-click #(plugin-handler/open-readme! url simple-markdown-display)}
+            svg/folder]
            [:div.r
-            [:h3.link-block.text-xl.font-bold.pt-1.5
+            [:h3.head.text-xl.font-bold.pt-1.5
              {:on-click #(plugin-handler/open-readme! url simple-markdown-display)}
              [:strong name]
              [:sup.inline-block.px-1.text-xs.opacity-30 version]]
-            [:p.text-xs.text-gray-400 (str "ID: " id)]
+            [:p.desc.text-xs.text-gray-400 description]
+            [:p.text-xs.text-gray-300.flex.justify-between.pr-2
+             [:small author]
+             [:small (str "ID: " id)]]
 
             [:div.ctl
              [:button.de.err ""]
