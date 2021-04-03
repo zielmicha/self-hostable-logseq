@@ -307,12 +307,20 @@ class PluginLocal
     })
 
     // TODO: How with local protocol
-    this._localRoot = url
+    const localRoot = this._localRoot = url
+    const makeFullUrl = (loc) => {
+      if (/^(http|file)/.test(loc)) return loc
+      const url = path.join(localRoot, loc)
+      return /^(http|file)/.test(url) ? url : ('file://' + url)
+    }
 
     // Entry from main
     if (pkg.main) {
-      const entry = path.join(this._localRoot, pkg.main)
-      this._options.entry = /^(http|file)/.test(entry) ? entry : ('file://' + entry)
+      this._options.entry = makeFullUrl(pkg.main)
+    }
+
+    if (pkg.icon) {
+      this._options.icon = makeFullUrl(pkg.icon)
     }
 
     const logseq: LSPluginPkgConfig = pkg.logseq || {}
@@ -640,7 +648,7 @@ class LSPluginCore
 
       if (initial) {
         plugins = plugins.concat([...externals].filter(url => {
-          return (plugins as RegisterPluginOpts[]).some((p) => !p.entry && (p.url !== url))
+          return !plugins.length || (plugins as RegisterPluginOpts[]).every((p) => !p.entry && (p.url !== url))
         }).map(url => ({ url })))
       }
 

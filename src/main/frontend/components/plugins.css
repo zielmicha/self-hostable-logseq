@@ -17,13 +17,20 @@
         background-color: var(--ls-secondary-background-color);
         height: 180px;
 
-        svg {
+        svg, .icon {
           width: 70px;
           height: 70px;
-          opacity: .4;
+          opacity: .8;
+
+          &:hover {
+            opacity: 1;
+          }
         }
 
         .head {
+          max-height: 60px;
+          overflow: hidden;
+
           cursor: pointer;
 
           &:active {
@@ -32,8 +39,15 @@
         }
 
         .desc {
-          height: 70px;
+          height: 60px;
           overflow: hidden;
+        }
+
+        .flag {
+         position: absolute;
+         bottom: 20px;
+         left: 0;
+         width: 100%;
         }
 
         > .l {
