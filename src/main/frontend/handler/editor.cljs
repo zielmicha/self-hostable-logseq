@@ -310,6 +310,7 @@
                       after-blocks)]
     [after-blocks @block-and-children-content @last-child-end-pos]))
 
+;; FIXME: children' :block/path-ref-pages
 (defn compute-retract-refs
   "Computes old references to be retracted."
   [eid {:block/keys [ref-pages ref-blocks]} old-ref-pages old-ref-blocks]
@@ -507,7 +508,8 @@
                                    [:db/retract id :block/scheduled]
                                    [:db/retract id :block/scheduled-ast]
                                    [:db/retract id :block/marker]
-                                   [:db/retract id :block/repeated?]]))
+                                   [:db/retract id :block/repeated?]
+                                   [:db/retract id :block/path-ref-pages]]))
         [after-blocks block-children-content new-end-pos] (rebuild-after-blocks-indent-outdent repo file block (:end-pos (:block/meta block)) end-pos indent-left?)
         retract-refs (compute-retract-refs (:db/id e) (first blocks) ref-pages ref-blocks)
         page-id (:db/id page)
@@ -698,7 +700,8 @@
                                    [:db/retract id :block/scheduled]
                                    [:db/retract id :block/scheduled-ast]
                                    [:db/retract id :block/marker]
-                                   [:db/retract id :block/repeated?]]))
+                                   [:db/retract id :block/repeated?]
+                                   [:db/retract id :block/path-ref-pages]]))
         transact-fn (fn []
                       (repo-handler/transact-react-and-alter-file!
                        repo
@@ -1541,8 +1544,8 @@
    (p/all
     (for [[index ^js file] (map-indexed vector files)]
       (do
-        (js/console.dir file)
-        (let [file-name (.-name file)
+        ;; WARN file name maybe fully qualified path when paste file
+        (let [file-name (util/node-path.basename (.-name file))
               [file-base ext] (if file-name
                                 (let [last-dot-index (string/last-index-of file-name ".")]
                                   [(subs file-name 0 last-dot-index)
