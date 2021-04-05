@@ -83,21 +83,24 @@
                        (js/apis.openPath (str root "/preferences.json"))))))]
 
      [:div.lists.grid-cols-1.md:grid-cols-2.lg:grid-cols-3
-      (for [[_ {:keys [id name settings version url description author]}] installed-plugins]
+      (for [[_ {:keys [id name settings version url description author icon]}] installed-plugins]
         (let [disabled (:disabled settings)]
           [:div.it {:key id}
            [:div.l.link-block
             {:on-click #(plugin-handler/open-readme! url simple-markdown-display)}
-            svg/folder]
+            (if icon
+              [:img.icon {:src icon}]
+              svg/folder)]
            [:div.r
             [:h3.head.text-xl.font-bold.pt-1.5
              {:on-click #(plugin-handler/open-readme! url simple-markdown-display)}
              [:strong name]
              [:sup.inline-block.px-1.text-xs.opacity-30 version]]
             [:p.desc.text-xs.text-gray-400 description]
-            [:p.text-xs.text-gray-300.flex.justify-between.pr-2
-             [:small author]
-             [:small (str "ID: " id)]]
+            [:div.flag
+             [:p.text-xs.text-gray-300.pr-2.flex.justify-between.dark:opacity-40
+              [:small author]
+              [:small (str "ID: " id)]]]
 
             [:div.ctl
              [:button.de.err ""]

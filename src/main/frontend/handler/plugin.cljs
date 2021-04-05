@@ -113,7 +113,9 @@
                                              (update-plugin-settings id (bean/->clj settings)))))))
            _ (.register js/LSPluginCore
                         (bean/->js
-                         [a-themes-provider])
+                         [
+                          ;a-themes-provider
+                          ])
                         true)
            _ (p/delay 1000)])
    #(do
