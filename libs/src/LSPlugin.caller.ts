@@ -163,26 +163,41 @@ class LSPluginCaller extends EventEmitter {
 
     this._status = 'pending'
 
-    return handshake.then(refChild => {
-      this._parent = refChild
-      this._connected = true
-      this.emit('connected')
+    // timeout for handshake
+    let timer: NodeJS.Timeout
 
-      refChild.frame.setAttribute('id', pl.id)
-      refChild.on(LSPMSGFn(pl.id), ({ type, payload }: any) => {
-        debug(`[call from plugin] `, type, payload)
+    return new Promise((resolve, reject) => {
+      timer = setTimeout(() => {
+        reject(new Error(`handshake Timeout`))
+      }, 3 * 1000) // 3secs
 
-        this._pluginLocal?.emit(type, payload || {})
+      handshake.then(refChild => {
+        this._parent = refChild
+        this._connected = true
+        this.emit('connected')
+
+        refChild.frame.setAttribute('id', pl.id)
+        refChild.on(LSPMSGFn(pl.id), ({ type, payload }: any) => {
+          debug(`[call from plugin] `, type, payload)
+
+          this._pluginLocal?.emit(type, payload || {})
+        })
+
+        this._call = async (...args: any) => {
+          // parent all will get message
+          await refChild.call(LSPMSGFn(pl.id), { type: args[0], payload: args[1] || {} })
+        }
+
+        this._callUserModel = async (...args: any) => {
+          await refChild.call(args[0], args[1] || {})
+        }
+
+        resolve(null)
+      }).catch(e => {
+        reject(e)
+      }).finally(() => {
+        clearTimeout(timer)
       })
-
-      this._call = async (...args: any) => {
-        // parent all will get message
-        await refChild.call(LSPMSGFn(pl.id), { type: args[0], payload: args[1] || {} })
-      }
-
-      this._callUserModel = async (...args: any) => {
-        await refChild.call(args[0], args[1] || {})
-      }
     }).catch(e => {
       debug('iframe sandbox error', e)
       throw e
