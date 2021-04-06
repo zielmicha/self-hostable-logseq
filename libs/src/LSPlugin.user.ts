@@ -4,13 +4,14 @@ import {
   IAppProxy, IDBProxy,
   IEditorProxy,
   ILSPluginUser,
-  LSPluginBaseInfo,
+  LSPluginBaseInfo, LSPluginUserEvents,
   StyleString,
   ThemeOptions,
   UIOptions
 } from './LSPlugin'
 import Debug from 'debug'
 import { snakeCase } from 'snake-case'
+import EventEmitter from 'eventemitter3'
 
 declare global {
   interface Window {
@@ -25,15 +26,21 @@ const app: Partial<IAppProxy> = {}
 const editor: Partial<IEditorProxy> = {}
 const db: Partial<IDBProxy> = {}
 
+type uiState = {
+  key?: number,
+  visible: boolean
+}
+
 /**
  * User plugin instance
  */
-export class LSPluginUser implements ILSPluginUser {
+export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements ILSPluginUser {
   /**
    * Indicate connected with host
    * @private
    */
   private _connected: boolean = false
+  private _ui = new Map<number, uiState>()
 
   /**
    * @param _baseInfo
@@ -43,7 +50,7 @@ export class LSPluginUser implements ILSPluginUser {
     private _baseInfo: LSPluginBaseInfo,
     private _caller: LSPluginCaller
   ) {
-
+    super()
   }
 
   async ready (callback: (e: LSPluginBaseInfo) => any) {
@@ -90,15 +97,27 @@ export class LSPluginUser implements ILSPluginUser {
   }
 
   hideMainUI (): void {
-    this.caller.call('main-ui:visible', { visible: false })
+    const payload = { key: 0, visible: false }
+    this.caller.call('main-ui:visible', payload)
+    this.emit('ui:visible:changed', payload)
+    this._ui.set(payload.key, payload)
   }
 
   showMainUI (): void {
-    this.caller.call('main-ui:visible', { visible: true })
+    const payload = { key: 0, visible: true }
+    this.caller.call('main-ui:visible', payload)
+    this.emit('ui:visible:changed', payload)
+    this._ui.set(payload.key, payload)
   }
 
   toggleMainUI (): void {
-    this.caller.call('main-ui:visible', { toggle: true })
+    const payload = { key: 0, toggle: true }
+    const state = this._ui.get(payload.key)
+    if (state && state.visible) {
+      this.hideMainUI()
+    } else {
+      this.showMainUI()
+    }
   }
 
   get connected (): boolean {

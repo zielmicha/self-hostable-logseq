@@ -104,6 +104,7 @@ function initMainUIHandlers (pluginLocal: PluginLocal) {
   pluginLocal.on(_('visible'), ({ visible, toggle }) => {
     const el = pluginLocal.getMainUI()
     el?.classList[toggle ? 'toggle' : (visible ? 'add' : 'remove')]('visible')
+    // pluginLocal.caller!.callUserModel(LSPMSG, { type: _('visible'), payload: visible })
   })
 
   pluginLocal.on(_('attrs'), (attrs: Record<string, any>) => {

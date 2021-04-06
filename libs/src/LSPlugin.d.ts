@@ -51,6 +51,7 @@ interface IAppProxy {
   pushState: (k: string, params?: {}) => void
   replaceState: (k: string, params?: {}) => void
   getUserState: () => Promise<any>
+  datascriptQuery: (query: string) => Promise<any>
   onThemeModeChanged: IUserHook
 }
 
@@ -72,7 +73,9 @@ interface ILSPluginThemeManager extends EventEmitter {
   selectTheme (opt?: ThemeOptions): Promise<void>
 }
 
-interface ILSPluginUser {
+type LSPluginUserEvents = 'ui:visible:changed'
+
+interface ILSPluginUser extends EventEmitter<LSPluginUserEvents> {
   /**
    * Indicate connected with host
    */
