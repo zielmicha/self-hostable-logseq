@@ -308,15 +308,18 @@ class PluginLocal
 
     // TODO: How with local protocol
     const localRoot = this._localRoot = url
-    const makeFullUrl = (loc) => {
-      if (/^(http|file)/.test(loc)) return loc
-      const url = path.join(localRoot, loc)
-      return /^(http|file)/.test(url) ? url : ('file://' + url)
+    const makeFullUrl = (loc, useFileProtocol = false) => {
+      const reg = /^(http|file|assets)/
+      if (!reg.test(loc)) {
+        const url = path.join(localRoot, loc)
+        loc = reg.test(url) ? url : ('file://' + url)
+      }
+      return useFileProtocol ? loc : loc.replace('file:', 'assets:')
     }
 
     // Entry from main
     if (pkg.main) {
-      this._options.entry = makeFullUrl(pkg.main)
+      this._options.entry = makeFullUrl(pkg.main, true)
     }
 
     if (pkg.icon) {
@@ -667,11 +670,7 @@ class LSPluginCore
         if (loadErr) {
           debug(`Failed load plugin #`, pluginOptions)
 
-          this.emit('error', {
-            plg: pluginLocal,
-            tag: 'LoadError',
-            err: pluginLocal.loadErr
-          })
+          this.emit('error', loadErr)
 
           if (
             loadErr instanceof IllegalPluginPackageError ||

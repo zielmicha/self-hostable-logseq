@@ -5,7 +5,7 @@
 #### Installation
 
 ```shell
-yarn add @logseq/libs
+yarn add @logseq/libs -D
 ```
 
 #### Usage

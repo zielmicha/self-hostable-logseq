@@ -183,6 +183,9 @@ class LSPluginCaller extends EventEmitter {
       this._callUserModel = async (...args: any) => {
         await refChild.call(args[0], args[1] || {})
       }
+    }).catch(e => {
+      debug('iframe sandbox error', e)
+      throw e
     }).finally(() => {
       this._status = undefined
     })
@@ -221,6 +224,7 @@ class LSPluginCaller extends EventEmitter {
       }
     } catch (e) {
       debug('shadow sandbox error', e)
+      throw e
     } finally {
       this._status = undefined
     }

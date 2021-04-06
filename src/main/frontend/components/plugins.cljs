@@ -41,7 +41,8 @@
                     :IllegalPluginPackageError
                     (notification/show! "Illegal Logseq plugin package." :error)
                     :ExistedImportedPluginPackageError
-                    (notification/show! "Existed Imported plugin package." :error))
+                    (notification/show! "Existed Imported plugin package." :error)
+                    :default)
                   (plugin-handler/reset-unpacked-state)))
          (.once "registered" #(plugin-handler/reset-unpacked-state))
          (.register (bean/->js {:url unpacked-pkg-path}))))
