@@ -17,6 +17,7 @@
             [frontend.components.reference :as reference]
             [frontend.components.svg :as svg]
             [frontend.components.export :as export]
+            [frontend.components.plugins :as plugins]
             [frontend.extensions.graph-2d :as graph-2d]
             [frontend.ui :as ui]
             [frontend.components.content :as content]
@@ -389,16 +390,18 @@
                          (not block?)
                          (not (state/hide-file?))
                          (not config/publishing?))
-                [:div.text-sm.ml-1.mb-4.flex-1.inline-flex
+                [:div.cp__page-file-ctls
                  {:key "page-file"}
-                 [:span.opacity-50 {:style {:margin-top 2}} (t :file/file)]
+                 [:span.opacity-50 (t :file/file)]
                  [:a.bg-base-2.px-1.ml-1.mr-3 {:style {:border-radius 4
                                                        :word-break    "break-word"}
                                                :href  (rfe/href :file {:path file-path})}
                   file-path]
 
                  (when (not config/mobile?)
-                   (presentation repo page))])]
+                   (presentation repo page))
+
+                 (plugins/hook-ui-slot :page-file-mounted nil)])]
 
              (when (and repo (not block?))
                (let [alias (db/get-page-alias-names repo page-name)]

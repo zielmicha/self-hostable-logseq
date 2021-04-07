@@ -7,79 +7,79 @@
       padding: 20px 0;
       font-size: 38px;
     }
+  }
 
-    > .lists {
-      @apply w-full grid grid-flow-row gap-3 pt-1;
+  &-item-lists {
+    @apply w-full grid grid-flow-row gap-3 pt-1;
+  }
 
-      > .it {
-        @apply flex py-3 px-1 rounded-md;
+  &-item-card {
+    @apply flex py-3 px-1 rounded-md;
 
-        background-color: var(--ls-secondary-background-color);
-        height: 180px;
+    background-color: var(--ls-secondary-background-color);
+    height: 180px;
 
-        svg, .icon {
-          width: 70px;
-          height: 70px;
-          opacity: .8;
+    svg, .icon {
+      width: 70px;
+      height: 70px;
+      opacity: .8;
 
-          &:hover {
-            opacity: 1;
-          }
-        }
+      &:hover {
+        opacity: 1;
+      }
+    }
 
-        .head {
-          max-height: 60px;
-          overflow: hidden;
+    .head {
+      max-height: 60px;
+      overflow: hidden;
 
-          cursor: pointer;
+      cursor: pointer;
 
-          &:active {
-            opacity: .8;
-          }
-        }
+      &:active {
+        opacity: .8;
+      }
+    }
 
-        .desc {
-          height: 60px;
-          overflow: hidden;
-        }
+    .desc {
+      height: 60px;
+      overflow: hidden;
+    }
 
-        .flag {
-         position: absolute;
-         bottom: 20px;
-         left: 0;
-         width: 100%;
-        }
+    .flag {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      width: 100%;
+    }
 
-        > .l {
-          padding: 8px;
-        }
+    > .l {
+      padding: 8px;
+    }
 
-        > .r {
-          flex: 1;
-          position: relative;
+    > .r {
+      flex: 1;
+      position: relative;
 
-          p {
-            @apply py-1 m-0;
-          }
+      p {
+        @apply py-1 m-0;
+      }
 
-          .ctl {
-            @apply flex pl-2 items-center justify-between absolute w-full;
+      .ctl {
+        @apply flex pl-2 items-center justify-between absolute w-full;
 
-            bottom: -3px;
-            right: 8px;
+        bottom: -3px;
+        right: 8px;
 
-            .de {
-              font-size: 10px;
-              padding: 0 5px;
-              border-radius: 2px;
-              opacity: .3;
-              user-select: none;
-              transition: none;
+        .de {
+          font-size: 10px;
+          padding: 0 5px;
+          border-radius: 2px;
+          opacity: .3;
+          user-select: none;
+          transition: none;
 
-              &.err {
-                @apply text-red-500 opacity-100;
-              }
-            }
+          &.err {
+            @apply text-red-500 opacity-100;
           }
         }
       }
@@ -113,5 +113,13 @@
     width: 100vw;
     height: 100vh;
     visibility: visible;
+  }
+}
+
+body {
+  &[data-page=page] {
+    .lsp-hook-ui-slot {
+      @apply flex items-center px-1 opacity-70;
+    }
   }
 }

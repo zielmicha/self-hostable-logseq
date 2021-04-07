@@ -60,6 +60,35 @@
      {:style {:width "700px" :min-height "60vw"}}
      content]))
 
+(rum/defc plugin-item-card
+  [{:keys [id name settings version url description author icon] :as item}]
+  (let [disabled (:disabled settings)]
+    [:div.cp__plugins-item-card {:key id}
+     [:div.l.link-block
+      {:on-click #(plugin-handler/open-readme! url simple-markdown-display)}
+      (if icon
+        [:img.icon {:src icon}]
+        svg/folder)]
+     [:div.r
+      [:h3.head.text-xl.font-bold.pt-1.5
+       {:on-click #(plugin-handler/open-readme! url simple-markdown-display)}
+       [:span name]
+       [:sup.inline-block.px-1.text-xs.opacity-30 version]]
+      [:p.desc.text-xs.text-gray-400 description]
+      [:div.flag
+       [:p.text-xs.text-gray-300.pr-2.flex.justify-between.dark:opacity-40
+        [:small author]
+        [:small (str "ID: " id)]]]
+
+      [:div.ctl
+       [:button.de.err ""]
+       [:div.flex.items-center
+        [:small.de (if disabled "Disabled" "Enabled")]
+        (ui/toggle (not disabled)
+                   (fn []
+                     (js-invoke js/LSPluginCore (if disabled "enable" "disable") id))
+                   true)]]]]))
+
 (rum/defc installed-page
   < rum/reactive
   []
@@ -83,35 +112,21 @@
                      (p/let [root (ipc/ipc "getLogseqUserRoot")]
                        (js/apis.openPath (str root "/preferences.json"))))))]
 
-     [:div.lists.grid-cols-1.md:grid-cols-2.lg:grid-cols-3
-      (for [[_ {:keys [id name settings version url description author icon]}] installed-plugins]
-        (let [disabled (:disabled settings)]
-          [:div.it {:key id}
-           [:div.l.link-block
-            {:on-click #(plugin-handler/open-readme! url simple-markdown-display)}
-            (if icon
-              [:img.icon {:src icon}]
-              svg/folder)]
-           [:div.r
-            [:h3.head.text-xl.font-bold.pt-1.5
-             {:on-click #(plugin-handler/open-readme! url simple-markdown-display)}
-             [:strong name]
-             [:sup.inline-block.px-1.text-xs.opacity-30 version]]
-            [:p.desc.text-xs.text-gray-400 description]
-            [:div.flag
-             [:p.text-xs.text-gray-300.pr-2.flex.justify-between.dark:opacity-40
-              [:small author]
-              [:small (str "ID: " id)]]]
-
-            [:div.ctl
-             [:button.de.err ""]
-             [:div.flex.items-center
-              [:small.de (if disabled "Disabled" "Enabled")]
-              (ui/toggle (not disabled)
-                         (fn []
-                           (js-invoke js/LSPluginCore (if disabled "enable" "disable") id))
-                         true)]]]]))]]))
+     [:div.cp__plugins-item-lists.grid-cols-1.md:grid-cols-2.lg:grid-cols-3
+      (for [[_ item] installed-plugins]
+        (plugin-item-card item))]]))
 
 (defn open-select-theme!
   []
   (state/set-modal! installed-themes))
+
+(rum/defc hook-ui-slot
+  [type opts]
+  (let [id (str "ui" (util/rand-str 8))]
+    (rum/use-effect!
+     (fn []
+       (plugin-handler/hook-event :plugin type {:id id})
+       #())
+     [])
+    [:div.lsp-hook-ui-slot
+     (merge opts {:id id})]))

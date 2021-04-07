@@ -37,22 +37,16 @@
 
 (defonce lsp-enabled? (util/electron?))
 
+(defn- hook-plugin-app
+  [type payload]
+  (when lsp-enabled?
+    (js/LSPluginCore.hookApp (name type) (bean/->js payload))))
+
 (defn hook-event
-  "docstring"
   [ns type payload]
   (case ns
-    :plugin))
-
-(defn hook-plugin-app
-  [type payload]
-  (hook-event :plugin type payload)
-  (when lsp-enabled?
-    (js/LSPluginCore.hookApp type payload)))
-
-(defn hook-app
-  [type payload]
-  (when lsp-enabled?
-    (js/LSPluginCore.hookApp type payload)))
+    :plugin (hook-plugin-app type payload)
+    :default))
 
 ;; components
 (rum/defc lsp-indicator < rum/reactive
@@ -113,9 +107,8 @@
                                              (update-plugin-settings id (bean/->clj settings)))))))
            _ (.register js/LSPluginCore
                         (bean/->js
-                         [
-                          ;a-themes-provider
-                          ])
+                         [;a-themes-provider
+])
                         true)
            _ (p/delay 1000)])
    #(do
