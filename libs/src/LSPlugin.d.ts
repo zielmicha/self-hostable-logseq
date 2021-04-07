@@ -31,6 +31,7 @@ interface LSPluginPkgConfig {
   id?: PluginLocalIdentity
   mode?: 'shadow' | 'iframe'
   themes?: Array<ThemeOptions>
+  icon?: string
 }
 
 interface LSPluginBaseInfo {
@@ -52,7 +53,9 @@ interface IAppProxy {
   replaceState: (k: string, params?: {}) => void
   getUserState: () => Promise<any>
   datascriptQuery: (query: string) => Promise<any>
+  showMsg: (content: string, status?: string) => void
   onThemeModeChanged: IUserHook
+  onPageFileMounted: IUserHook
 }
 
 interface IEditorProxy {
@@ -87,15 +90,18 @@ interface ILSPluginUser extends EventEmitter<LSPluginUserEvents> {
   caller: LSPluginCaller
 
   /**
-   * most from packages
+   * Most from packages
    */
   baseInfo: LSPluginBaseInfo
 
   /**
    * Ready for host connected
-   * @param callback
    */
+  ready (model?: Record<string, any>): Promise<any>
+
   ready (callback?: (e: any) => void | {}): Promise<any>
+
+  ready (model?: Record<string, any>, callback?: (e: any) => void | {}): Promise<any>
 
   /**
    * @param theme options
@@ -123,7 +129,7 @@ interface ILSPluginUser extends EventEmitter<LSPluginUserEvents> {
    */
   setMainUIAttrs (attrs: Record<string, any>): void
 
-  setMainUIStyle (style: Record<string, any> | null): void
+  setMainUIInlineStyle (style: CSSStyleDeclaration): void
 
   showMainUI (): void
 

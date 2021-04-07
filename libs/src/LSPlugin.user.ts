@@ -53,19 +53,26 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
     super()
   }
 
-  async ready (callback: (e: LSPluginBaseInfo) => any) {
+  async ready (
+    model?: any,
+    callback?: any
+  ) {
     if (this._connected) return
 
     try {
-      const isFn = typeof callback === 'function'
-      const model = isFn ? {} : callback
+
+      if (typeof model === 'function') {
+        model = {}
+        callback = model
+      }
+
       let baseInfo = await this._caller.connectToParent(model)
 
       baseInfo = deepMerge(this._baseInfo, baseInfo)
 
       this._connected = true
 
-      isFn && callback.call(this, baseInfo)
+      callback && callback.call(this, baseInfo)
     } catch (e) {
       console.error('[LSPlugin Ready Error]', e)
     }
@@ -92,7 +99,7 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
     this.caller.call('main-ui:attrs', attrs)
   }
 
-  setMainUIStyle (style: Record<string, any> | null): void {
+  setMainUIInlineStyle (style: CSSStyleDeclaration): void {
     this.caller.call('main-ui:style', style)
   }
 

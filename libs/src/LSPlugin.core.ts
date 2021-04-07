@@ -303,13 +303,14 @@ class PluginLocal
     }
 
     // Pick legal attrs
-    ['name', 'author', 'version', 'description', 'icon'].forEach(k => {
+    ['name', 'author', 'version', 'description'].forEach(k => {
       this._options[k] = pkg[k]
     })
 
     // TODO: How with local protocol
     const localRoot = this._localRoot = url
     const makeFullUrl = (loc, useFileProtocol = false) => {
+      if (!loc) return
       const reg = /^(http|file|assets)/
       if (!reg.test(loc)) {
         const url = path.join(localRoot, loc)
@@ -323,11 +324,12 @@ class PluginLocal
       this._options.entry = makeFullUrl(pkg.main, true)
     }
 
-    if (pkg.icon) {
-      this._options.icon = makeFullUrl(pkg.icon)
-    }
-
     const logseq: LSPluginPkgConfig = pkg.logseq || {}
+    const icon = logseq.icon || pkg.icon
+
+    if (icon) {
+      this._options.icon = makeFullUrl(icon)
+    }
 
     if (logseq.mode) {
       this._options.mode = logseq.mode
