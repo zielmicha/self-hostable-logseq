@@ -105,6 +105,10 @@ function initMainUIHandlers (pluginLocal: PluginLocal) {
     const el = pluginLocal.getMainUI()
     el?.classList[toggle ? 'toggle' : (visible ? 'add' : 'remove')]('visible')
     // pluginLocal.caller!.callUserModel(LSPMSG, { type: _('visible'), payload: visible })
+    // auto focus frame
+    if (!pluginLocal.shadow && el) {
+      (el as HTMLIFrameElement).contentWindow?.focus()
+    }
   })
 
   pluginLocal.on(_('attrs'), (attrs: Record<string, any>) => {
@@ -165,8 +169,8 @@ function initProviderHandlers (pluginLocal: PluginLocal) {
   })
 }
 
-function initAppProxyHandlers (pluginLocal: PluginLocal) {
-  let _ = (label: string): any => `app:${label}`
+function initApiProxyHandlers (pluginLocal: PluginLocal) {
+  let _ = (label: string): any => `api:${label}`
 
   pluginLocal.on(_('call'), (payload) => {
     const method = snakeCase(payload.method)
@@ -238,7 +242,7 @@ class PluginLocal
     initUserSettingsHandlers(this)
     initMainUIHandlers(this)
     initProviderHandlers(this)
-    initAppProxyHandlers(this)
+    initApiProxyHandlers(this)
   }
 
   async _setupUserSettings () {

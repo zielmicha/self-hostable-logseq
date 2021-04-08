@@ -1,8 +1,11 @@
 (ns ^:no-doc api
   (:require [frontend.db :as db]
+            [frontend.db.model :as db-model]
+            [frontend.handler.block :as block-handler]
             [frontend.util :as util]
             [electron.ipc :as ipc]
             [promesa.core :as p]
+            [camel-snake-kebab.core :as csk]
             [cljs-bean.core :as bean]
             [frontend.state :as state]
             [frontend.components.plugins :as plugins]
@@ -10,10 +13,12 @@
             [datascript.core :as d]
             [frontend.fs :as fs]
             [clojure.string :as string]
+            [clojure.walk :as walk]
             [cljs.reader]
             [reitit.frontend.easy :as rfe]
             [frontend.db.query-dsl :as query-dsl]))
 
+;; db
 (defn ^:export q
   [query-string]
   (when-let [repo (state/get-current-repo)]
@@ -31,16 +36,7 @@
 
 (def ^:export custom_query db/custom-query)
 
-(def ^:export push_state
-  (fn [^js k ^js params]
-    (rfe/push-state
-     (keyword k) (bean/->clj params))))
-
-(def ^:export replace_state
-  (fn [^js k ^js params]
-    (rfe/replace-state
-     (keyword k) (bean/->clj params))))
-
+;; base
 (def ^:export show_themes
   (fn []
     (plugins/open-select-theme!)))
@@ -99,6 +95,36 @@
             path (util/node-path.join path "settings" (str key ".json"))]
       (fs/write-file! repo "" path (js/JSON.stringify data nil 2) {:skip-mtime? true}))))
 
+;; app
+(def ^:export push_state
+  (fn [^js k ^js params]
+    (rfe/push-state
+     (keyword k) (bean/->clj params))))
+
+(def ^:export replace_state
+  (fn [^js k ^js params]
+    (rfe/replace-state
+     (keyword k) (bean/->clj params))))
+
+;; editor
+(def ^:export get_current_page_blocks_tree
+  (fn []
+    (when-let [page (state/get-current-page)]
+      (let [blocks (db-model/get-page-blocks-no-cache page)
+            blocks (mapv #(-> %
+                              (dissoc :block/children)
+                              (assoc :block/uuid (str (:block/uuid %))))
+                         blocks)
+            blocks (block-handler/blocks->vec-tree blocks)
+            ;; clean key
+            blocks (walk/postwalk
+                    (fn [a]
+                      (if (keyword? a)
+                        (csk/->camelCase (name a))
+                        a)) blocks)]
+        (bean/->js blocks)))))
+
+;; helpers
 (defn ^:export show_msg
   ([content] (show_msg content :success))
   ([content status] (notification/show! content (keyword status))))

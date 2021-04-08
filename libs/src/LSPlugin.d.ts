@@ -52,18 +52,17 @@ interface IAppProxy {
   pushState: (k: string, params?: {}) => void
   replaceState: (k: string, params?: {}) => void
   getUserState: () => Promise<any>
-  datascriptQuery: (query: string) => Promise<any>
   showMsg: (content: string, status?: string) => void
   onThemeModeChanged: IUserHook
   onPageFileMounted: IUserHook
 }
 
 interface IEditorProxy {
-
+  getCurrentPageBlocksTree: <T = any> () => Promise<T>
 }
 
 interface IDBProxy {
-
+  datascriptQuery: <T = any>(query: string) => Promise<T>
 }
 
 interface ILSPluginThemeManager extends EventEmitter {

@@ -139,10 +139,13 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
     return this._caller
   }
 
-  get App (): IAppProxy {
+  _makeUserProxy (
+    target: any,
+    tag?: 'app' | 'editor' | 'db'
+  ) {
     const caller = this.caller
 
-    return new Proxy(app, {
+    return new Proxy(target, {
       get (target: any, propKey, receiver) {
         const origMethod = target[propKey]
 
@@ -152,19 +155,21 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
           }
 
           // Handle hook
-          const hookMatcher = propKey.toString().match(/^(once|off|on)/i)
+          if (tag) {
+            const hookMatcher = propKey.toString().match(/^(once|off|on)/i)
 
-          if (hookMatcher != null) {
-            const f = hookMatcher[0]
-            const s = hookMatcher.input!
-            const e = s.slice(f.length)
+            if (hookMatcher != null) {
+              const f = hookMatcher[0]
+              const s = hookMatcher.input!
+              const e = s.slice(f.length)
 
-            caller[f.toLowerCase()](`hook:app:${snakeCase(e)}`, args[0])
-            return
+              caller[f.toLowerCase()](`hook:${tag}:${snakeCase(e)}`, args[0])
+              return
+            }
           }
 
           // Call host
-          return caller.callAsync(`app:call`, {
+          return caller.callAsync(`api:call`, {
             method: propKey,
             args: args
           })
@@ -173,12 +178,16 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
     })
   }
 
-  get Editor () {
-    return {}
+  get App (): IAppProxy {
+    return this._makeUserProxy(app, 'app')
   }
 
-  get DB () {
-    return {}
+  get Editor () {
+    return this._makeUserProxy(editor, 'editor')
+  }
+
+  get DB (): IDBProxy {
+    return this._makeUserProxy(db)
   }
 }
 
