@@ -1,35 +1,18 @@
 import { StyleString, UIOptions } from './LSPlugin'
 import { PluginLocal } from './LSPlugin.core'
 
-interface IIsObject {
-  (item: any): boolean;
-}
-
 interface IObject {
   [key: string]: any;
 }
 
-interface IDeepMerge {
-  (target: IObject, ...sources: Array<IObject>): IObject;
-}
-
-/**
- * @description Method to check if an item is an object. Date and Function are considered
- * an object, so if you need to exclude those, please update the method accordingly.
- * @param item - The item that needs to be checked
- * @return {Boolean} Whether or not @item is an object
- */
-export const isObject: IIsObject = (item: any): boolean => {
+export function isObject (item: any) {
   return (item === Object(item) && !Array.isArray(item))
 }
 
-/**
- * @description Method to perform a deep merge of objects
- * @param {Object} target - The targeted object that needs to be merged with the supplied @sources
- * @param {Array<Object>} sources - The source(s) that will be used to update the @target object
- * @return {Object} The final merged object
- */
-export const deepMerge: IDeepMerge = (target: IObject, ...sources: Array<IObject>): IObject => {
+export function deepMerge (
+  target: IObject,
+  ...sources: Array<IObject>
+) {
   // return the target if no sources passed
   if (!sources.length) {
     return target
@@ -68,14 +51,15 @@ export const deepMerge: IDeepMerge = (target: IObject, ...sources: Array<IObject
   return result
 }
 
-/**
- * generate an random string
- */
 export function genID () {
   // Math.random should be unique because of its seeding algorithm.
   // Convert it to base 36 (numbers + letters), and grab the first 9 characters
   // after the decimal.
   return '_' + Math.random().toString(36).substr(2, 9)
+}
+
+export function ucFirst (str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
 /**
@@ -112,21 +96,21 @@ export function deferred<T = any> (timeout?: number, tag?: string) {
   }
 }
 
-/**
- * @param str
- */
-export function ucFirst (str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1)
+export function invokeHostExportedApi (
+  method: string,
+  ...args: Array<any>
+) {
+  const fn = window.api[method]
+  if (!fn) {
+    throw new Error(`Not existed method #${method}`)
+  }
+  return typeof fn !== 'function' ? fn : fn.apply(null, args)
 }
 
-/**
- * @param props
- * @param target
- */
-export const setupIframeSandbox = (
+export function setupIframeSandbox (
   props: Record<string, any>,
-  target: HTMLElement) => {
-
+  target: HTMLElement
+) {
   const iframe = document.createElement('iframe')
 
   iframe.classList.add('lsp-iframe-sandbox')
@@ -142,13 +126,10 @@ export const setupIframeSandbox = (
   }
 }
 
-/**
- * @param style
- * @param attrs
- */
-export const setupInjectedStyle = (
+export function setupInjectedStyle (
   style: StyleString,
-  attrs: Record<string, any>) => {
+  attrs: Record<string, any>
+) {
   const el = document.createElement('style')
   el.textContent = style
 
@@ -163,10 +144,6 @@ export const setupInjectedStyle = (
   }
 }
 
-/**
- * @param ui
- * @param attrs
- */
 export function setupInjectedUI (
   this: PluginLocal,
   ui: UIOptions,
@@ -218,9 +195,6 @@ export function setupInjectedUI (
   }
 }
 
-/**
- * @param e
- */
 export function transformableEvent (e: Event) {
   const target = e.target as any
   const obj: any = {}
@@ -243,10 +217,7 @@ export function transformableEvent (e: Event) {
 
 let injectedThemeEffect: any = null
 
-/**
- * @param url
- */
-export const setupInjectedTheme = (url?: string) => {
+export function setupInjectedTheme (url?: string) {
   injectedThemeEffect?.call()
 
   if (!url) return

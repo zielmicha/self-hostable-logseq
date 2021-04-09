@@ -28,10 +28,10 @@ type UIOptions = {
 }
 
 interface LSPluginPkgConfig {
-  id?: PluginLocalIdentity
-  mode?: 'shadow' | 'iframe'
-  themes?: Array<ThemeOptions>
-  icon?: string
+  id: PluginLocalIdentity
+  mode: 'shadow' | 'iframe'
+  themes: Array<ThemeOptions>
+  icon: string
 }
 
 interface LSPluginBaseInfo {

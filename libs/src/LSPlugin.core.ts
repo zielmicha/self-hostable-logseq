@@ -1,5 +1,13 @@
 import EventEmitter from 'eventemitter3'
-import { deepMerge, setupInjectedStyle, genID, setupInjectedTheme, setupInjectedUI, deferred } from './helpers'
+import {
+  deepMerge,
+  setupInjectedStyle,
+  genID,
+  setupInjectedTheme,
+  setupInjectedUI,
+  deferred,
+  invokeHostExportedApi
+} from './helpers'
 import Debug from 'debug'
 import { LSPluginCaller, LSPMSG_READY, LSPMSG_SYNC, LSPMSG } from './LSPlugin.caller'
 import { ILSPluginThemeManager, LSPluginPkgConfig, ThemeOptions, UIOptions } from './LSPlugin'
@@ -251,7 +259,7 @@ class PluginLocal
     try {
       const key = _options.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + this.id
 
-      const userSettings = await window.api[`load_plugin_user_settings`](key)
+      const userSettings = await invokeHostExportedApi('load_plugin_user_settings', key)
 
       _options.settings = new PluginSettings(userSettings)
 
@@ -270,7 +278,7 @@ class PluginLocal
         }
 
         if (a) {
-          window.api[`save_plugin_user_settings`](key, a)
+          invokeHostExportedApi(`save_plugin_user_settings`, key, a)
         }
       })
     } catch (e) {
@@ -297,7 +305,7 @@ class PluginLocal
 
       debug('prepare package root', url)
 
-      pkg = await window.api.load_plugin_config(url)
+      pkg = await invokeHostExportedApi('load_plugin_config', url)
 
       if (!pkg || (pkg = JSON.parse(pkg), !pkg)) {
         throw new Error(`Parse package config error #${url}/package.json`)
@@ -313,6 +321,7 @@ class PluginLocal
 
     // TODO: How with local protocol
     const localRoot = this._localRoot = url
+    const logseq: Partial<LSPluginPkgConfig> = pkg.logseq || {}
     const makeFullUrl = (loc, useFileProtocol = false) => {
       if (!loc) return
       const reg = /^(http|file|assets)/
@@ -328,7 +337,6 @@ class PluginLocal
       this._options.entry = makeFullUrl(pkg.main, true)
     }
 
-    const logseq: LSPluginPkgConfig = pkg.logseq || {}
     const icon = logseq.icon || pkg.icon
 
     if (icon) {
@@ -345,7 +353,7 @@ class PluginLocal
     } else {
       logseq.id = this.id
       try {
-        await window.api.save_plugin_config(url, { ...pkg, logseq })
+        await invokeHostExportedApi('save_plugin_config', url, { ...pkg, logseq })
       } catch (e) {
         debug('[save plugin ID Error] ', e)
       }
@@ -459,7 +467,12 @@ class PluginLocal
 
     if (unregister) {
       await this.unload()
-      // TODO: delete plugin local files
+
+      if (this.isInstalledInUserRoot) {
+        // TODO: delete plugin local files
+        debug('TODO: remove plugin local files from user home root :)')
+      }
+
       return
     }
 
@@ -516,6 +529,12 @@ class PluginLocal
         setTimeout(callback, expiredTime > 3000 ? 0 : 1000)
       })
     }
+  }
+
+  get isInstalledInUserRoot () {
+    const userRoot = this._ctx.options.localUserConfigRoot
+    const plugRoot = this._localRoot
+    return userRoot && plugRoot && userRoot.startsWith(plugRoot)
   }
 
   get loaded () {
@@ -602,7 +621,7 @@ class LSPluginCore
 
   async loadUserPreferences () {
     try {
-      const settings = await window.api[`load_user_preferences`]()
+      const settings = await invokeHostExportedApi(`load_user_preferences`)
 
       if (settings) {
         Object.assign(this._userPreferences, settings)
@@ -618,7 +637,7 @@ class LSPluginCore
         Object.assign(this._userPreferences, settings)
       }
 
-      await window.api[`save_user_preferences`](this._userPreferences)
+      await invokeHostExportedApi(`save_user_preferences`, this._userPreferences)
     } catch (e) {
       debug('[save user preferences Error]', e)
     }
@@ -663,8 +682,7 @@ class LSPluginCore
       }
 
       for (const pluginOptions of plugins) {
-
-        const { url, entry } = pluginOptions as PluginLocalOptions
+        const { url } = pluginOptions as PluginLocalOptions
         const pluginLocal = new PluginLocal(pluginOptions as PluginLocalOptions, this, this)
 
         const timeLabel = `Load plugin #${pluginLocal.id}`
@@ -697,10 +715,8 @@ class LSPluginCore
         this.emit('registered', pluginLocal)
 
         // external plugins
-        if (url && !entry && userConfigRoot) {
-          if (url.indexOf(userConfigRoot) === -1) {
-            externals.add(url)
-          }
+        if (!pluginLocal.isInstalledInUserRoot) {
+          externals.add(url)
         }
       }
 
@@ -798,7 +814,7 @@ class LSPluginCore
     return this._registeredPlugins
   }
 
-  get options (): any {
+  get options () {
     return this._options
   }
 

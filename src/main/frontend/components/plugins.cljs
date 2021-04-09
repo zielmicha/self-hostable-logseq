@@ -81,7 +81,10 @@
         [:small (str "ID: " id)]]]
 
       [:div.ctl
-       [:button.de.err ""]
+       [:div.l
+        ;;[:button.de "uninstall"]
+        ;;[:button.de.err "errors"]
+]
        [:div.flex.items-center
         [:small.de (if disabled "Disabled" "Enabled")]
         (ui/toggle (not disabled)
