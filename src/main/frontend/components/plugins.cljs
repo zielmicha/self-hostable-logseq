@@ -132,10 +132,10 @@
 
 (rum/defc hook-ui-slot
   [type opts]
-  (let [id (str "ui" (util/rand-str 8))]
+  (let [id (str "slot__" (util/rand-str 8))]
     (rum/use-effect!
      (fn []
-       (plugin-handler/hook-event :plugin type {:id id})
+       (plugin-handler/hook-event :plugin type {:slot id})
        #())
      [])
     [:div.lsp-hook-ui-slot

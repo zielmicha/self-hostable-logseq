@@ -150,9 +150,11 @@ export function setupInjectedUI (
   attrs: Record<string, any>
 ) {
   const pl = this
-  const target = ui.path && document.querySelector(ui.path)
+  const selector = ui.path || `#${ui.slot}`
+
+  const target = selector && document.querySelector(selector)
   if (!target) {
-    console.error(`${this.debugTag} can not resolve path target ${ui.path}`)
+    console.error(`${this.debugTag} can not resolve selector target ${selector}`)
     return
   }
 

@@ -20,12 +20,21 @@ type ThemeOptions = {
 
 type StyleString = string
 
-type UIOptions = {
+type UIBaseOptions = {
   key?: string
   replace?: boolean
-  path: string // dom selector
   template: string
 }
+
+type UIPathIdentity = {
+  path: string // dom selector
+}
+
+type UISlotIdentity = {
+  slot: string // slot key
+}
+
+type UIOptions = UIBaseOptions & UISlotIdentity & UIPathIdentity
 
 interface LSPluginPkgConfig {
   id: PluginLocalIdentity
@@ -46,15 +55,20 @@ interface LSPluginBaseInfo {
   [key: string]: any
 }
 
-type IUserHook = (callback: (e: any) => void) => void
+type IHookEvent = {
+  [key: string]: any
+}
+
+type IUserHook = (callback: (e: IHookEvent) => void) => void
+type IUserSlotHook = (callback: (e: IHookEvent & UISlotIdentity) => void) => void
 
 interface IAppProxy {
   pushState: (k: string, params?: {}) => void
   replaceState: (k: string, params?: {}) => void
   getUserState: () => Promise<any>
-  showMsg: (content: string, status?: string) => void
+  showMsg: (content: string, status?: 'success' | 'warning' | string) => void
   onThemeModeChanged: IUserHook
-  onPageFileMounted: IUserHook
+  onPageFileMounted: IUserSlotHook
 }
 
 interface IEditorProxy {
