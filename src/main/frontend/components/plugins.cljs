@@ -82,7 +82,14 @@
 
       [:div.ctl
        [:div.l
-        ;;[:button.de "uninstall"]
+        [:button.de
+         {:on-click #(let [confirm-fn
+                           (ui/make-confirm-modal
+                            {:title      (str "Are you sure uninstall plugin - " name "?")
+                             :on-confirm (fn [_ {:keys [close-fn]}]
+                                           (close-fn)
+                                           (plugin-handler/unregister-plugin id))})]
+                       (state/set-modal! confirm-fn))} "uninstall"]
         ;;[:button.de.err "errors"]
 ]
        [:div.flex.items-center

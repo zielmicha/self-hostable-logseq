@@ -7,10 +7,16 @@
             [electron.ipc :as ipc]
             [cljs-bean.core :as bean]))
 
+(defonce lsp-enabled? (util/electron?))
+
 ;; state handlers
 (defn register-plugin
   [pl]
   (swap! state/state update-in [:plugin/installed-plugins] assoc (keyword (:id pl)) pl))
+
+(defn unregister-plugin
+  [id]
+  (js/LSPluginCore.unregister id))
 
 (defn update-plugin-settings
   [id settings]
@@ -34,8 +40,6 @@
 (defn reset-unpacked-state
   []
   (state/set-state! :plugin/selected-unpacked-pkg nil))
-
-(defonce lsp-enabled? (util/electron?))
 
 (defn- hook-plugin-app
   [type payload]
@@ -90,7 +94,7 @@
                     (fn [^js pl]
                       (register-plugin
                        (bean/->clj (.parse js/JSON (.stringify js/JSON pl))))))
-               (.on "unregistered" #(prn "unregistered:" %))
+               (.on "unregistered" #(when % (swap! state/state util/dissoc-in [:plugin/installed-plugins (keyword %)])))
                (.on "theme-changed" (fn [^js themes]
                                       (swap! state/state assoc :plugin/installed-themes
                                              (vec (mapcat (fn [[_ vs]] (bean/->clj vs)) (bean/->clj themes))))))

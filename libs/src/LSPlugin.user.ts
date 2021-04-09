@@ -62,8 +62,8 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
     try {
 
       if (typeof model === 'function') {
-        model = {}
         callback = model
+        model = {}
       }
 
       let baseInfo = await this._caller.connectToParent(model)

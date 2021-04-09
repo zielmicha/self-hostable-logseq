@@ -749,12 +749,26 @@ class LSPluginCore
       return
     }
 
+    const unregisteredExternals: Array<string> = []
+
     for (const identity of plugins) {
       const p = this.ensurePlugin(identity)
+
+      if (!p.isInstalledInUserRoot) {
+        unregisteredExternals.push(p.options.url)
+      }
+
       await p.unload(true)
 
       this._registeredPlugins.delete(identity)
       this.emit('unregistered', identity)
+    }
+
+    let externals = this._userPreferences.externals || []
+    if (externals.length && unregisteredExternals.length) {
+      await this.saveUserPreferences({ externals: externals.filter((it) => {
+        return !unregisteredExternals.includes(it)
+      })})
     }
   }
 
