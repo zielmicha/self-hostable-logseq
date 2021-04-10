@@ -68,7 +68,7 @@ export function ucFirst (str: string) {
  */
 export function deferred<T = any> (timeout?: number, tag?: string) {
   let resolve: any, reject: any
-  let settled: boolean = false
+  let settled = false
   const timeFn = (r: Function) => {
     return (v: T) => {
       timeout && clearTimeout(timeout)
@@ -82,7 +82,8 @@ export function deferred<T = any> (timeout?: number, tag?: string) {
     reject = timeFn(reject1)
 
     if (timeout) {
-      setTimeout(() => reject(new Error(`[deferred timeout] ${tag}`)), timeout)
+      // @ts-ignore
+      timeout = setTimeout(() => reject(new Error(`[deferred timeout] ${tag}`)), timeout)
     }
   })
 

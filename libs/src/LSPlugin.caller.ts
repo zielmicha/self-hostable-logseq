@@ -164,7 +164,7 @@ class LSPluginCaller extends EventEmitter {
     this._status = 'pending'
 
     // timeout for handshake
-    let timer: NodeJS.Timeout
+    let timer
 
     return new Promise((resolve, reject) => {
       timer = setTimeout(() => {
