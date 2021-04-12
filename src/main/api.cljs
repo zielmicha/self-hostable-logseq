@@ -86,7 +86,7 @@
             path (util/node-path.join path "settings" (str key ".json"))
             _ (fs/create-if-not-exists repo "" path "{}")
             json (fs/read-file "" path)]
-      (js/JSON.parse json))))
+      [path (js/JSON.parse json)])))
 
 (def ^:export save_plugin_user_settings
   (fn [key ^js data]

@@ -6,7 +6,8 @@ import {
   setupInjectedTheme,
   setupInjectedUI,
   deferred,
-  invokeHostExportedApi
+  invokeHostExportedApi,
+  isObject
 } from './helpers'
 import Debug from 'debug'
 import { LSPluginCaller, LSPMSG_READY, LSPMSG_SYNC, LSPMSG } from './LSPlugin.caller'
@@ -50,10 +51,12 @@ class PluginSettings extends EventEmitter<'change'> {
     const o = deepMerge({}, this._settings)
 
     if (typeof k === 'string') {
-      if (o[k] == v) return
+      if (this._settings[k] == v) return
       this._settings[k] = v
-    } else {
+    } else if (isObject(k)) {
       deepMerge(this._settings, k)
+    } else {
+      return
     }
 
     this.emit('change',
@@ -62,6 +65,49 @@ class PluginSettings extends EventEmitter<'change'> {
 
   toJSON () {
     return this._settings
+  }
+}
+
+class PluginLogger extends EventEmitter<'change'> {
+  private _logs: Array<[type: string, payload: any]> = []
+
+  constructor (private _tag: string) {
+    super()
+  }
+
+  write (type: string, payload: any[]) {
+    let msg = payload.reduce((ac, it) => {
+      if (it && it instanceof Error) {
+        ac += `${it.message} ${it.stack}`
+      } else {
+        ac += it.toString()
+      }
+      return ac
+    }, `[${this._tag}][${new Date().toLocaleTimeString()}] `)
+
+    this._logs.push([type, msg])
+    this.emit('change')
+  }
+
+  clear () {
+    this._logs = []
+    this.emit('change')
+  }
+
+  info (...args: any[]) {
+    this.write('INFO', args)
+  }
+
+  error (...args: any[]) {
+    this.write('ERROR', args)
+  }
+
+  warn (...args: any[]) {
+    this.write('WARN', args)
+  }
+
+  toJSON () {
+    return this._logs
   }
 }
 
@@ -80,6 +126,7 @@ type PluginLocalOptions = {
   version: string
   mode: 'shadow' | 'iframe'
   settings?: PluginSettings
+  logger?: PluginLogger
 
   [key: string]: any
 }
@@ -231,6 +278,7 @@ class PluginLocal
   private _status: PluginLocalLoadStatus = PluginLocalLoadStatus.UNLOADED
   private _loadErr?: Error
   private _localRoot?: string
+  private _userSettingsFile?: string
   private _caller?: LSPluginCaller
 
   /**
@@ -258,13 +306,15 @@ class PluginLocal
 
     try {
       const key = _options.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + this.id
+      const logger = _options.logger = new PluginLogger('Loader')
 
-      const userSettings = await invokeHostExportedApi('load_plugin_user_settings', key)
+      const [userSettingsFilePath, userSettings] = await invokeHostExportedApi('load_plugin_user_settings', key)
+      this._userSettingsFile = userSettingsFilePath
 
-      _options.settings = new PluginSettings(userSettings)
+      const settings = _options.settings = new PluginSettings(userSettings)
 
       // observe settings
-      _options.settings.on('change', (a, b) => {
+      settings.on('change', (a, b) => {
         debug('linked settings change', a)
 
         if (!a.disabled && b.disabled) {
@@ -283,6 +333,7 @@ class PluginLocal
       })
     } catch (e) {
       debug('[load plugin user settings Error]', e)
+      this.logger?.error(e)
     }
   }
 
@@ -443,6 +494,7 @@ class PluginLocal
       })
     } catch (e) {
       debug('[Load Plugin Error] ', e)
+      this.logger?.error(e)
 
       this._status = PluginLocalLoadStatus.ERROR
       this._loadErr = e
@@ -503,7 +555,7 @@ class PluginLocal
       try {
         fn && (await fn())
       } catch (e) {
-        console.error('[PluginLocal] Dispose Error', e)
+        console.error(this.debugTag, 'dispose Error', e)
       }
     }
 
@@ -554,6 +606,10 @@ class PluginLocal
     return this.options.settings
   }
 
+  get logger () {
+    return this.options.logger
+  }
+
   get disabled () {
     return this.settings?.get('disabled')
   }
@@ -590,10 +646,15 @@ class PluginLocal
     return this._loadErr
   }
 
+  get userSettingsFile (): string | undefined {
+    return this._userSettingsFile
+  }
+
   toJSON () {
     const json = { ...this.options } as any
     json.id = this.id
     json.err = this.loadErr
+    json.usf = this.userSettingsFile
     return json
   }
 }
@@ -766,9 +827,11 @@ class LSPluginCore
 
     let externals = this._userPreferences.externals || []
     if (externals.length && unregisteredExternals.length) {
-      await this.saveUserPreferences({ externals: externals.filter((it) => {
-        return !unregisteredExternals.includes(it)
-      })})
+      await this.saveUserPreferences({
+        externals: externals.filter((it) => {
+          return !unregisteredExternals.includes(it)
+        })
+      })
     }
   }
 

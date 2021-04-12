@@ -19,16 +19,16 @@
      [:h2.mb-4.text-xl "Installed Themes"]
      (for [opt themes]
        (let [current-selected (= selected (:url opt))]
-           [:div.it.flex.px-3.py-2.mb-2.rounded-sm.justify-between
-            {:key   (:url opt)
-             :class [(if current-selected "selected")]
-             :on-click #(do (js/LSPluginCore.selectTheme (if current-selected nil (clj->js opt)))
-                            (state/set-modal! nil))}
-            [:section
-             [:strong.block (:name opt)]
-             [:small.opacity-30 (:description opt)]]
-            [:small.flex-shrink-0.flex.items-center.opacity-10
-             (if current-selected "current")]]))]))
+         [:div.it.flex.px-3.py-2.mb-2.rounded-sm.justify-between
+          {:key   (:url opt)
+           :class [(if current-selected "selected")]
+           :on-click #(do (js/LSPluginCore.selectTheme (if current-selected nil (clj->js opt)))
+                          (state/set-modal! nil))}
+          [:section
+           [:strong.block (:name opt)]
+           [:small.opacity-30 (:description opt)]]
+          [:small.flex-shrink-0.flex.items-center.opacity-10
+           (if current-selected "current")]]))]))
 
 (rum/defc unpacked-plugin-loader
   [unpacked-pkg-path]
@@ -66,7 +66,7 @@
      content]))
 
 (rum/defc plugin-item-card
-  [{:keys [id name settings version url description author icon] :as item}]
+  [{:keys [id name settings version url description author icon usf] :as item}]
   (let [disabled (:disabled settings)]
     [:div.cp__plugins-item-card {:key id}
      [:div.l.link-block
@@ -87,16 +87,20 @@
 
       [:div.ctl
        [:div.l
-        [:button.de
-         {:on-click #(let [confirm-fn
-                           (ui/make-confirm-modal
-                            {:title      (str "Are you sure uninstall plugin - " name "?")
-                             :on-confirm (fn [_ {:keys [close-fn]}]
-                                           (close-fn)
-                                           (plugin-handler/unregister-plugin id))})]
-                       (state/set-modal! confirm-fn))} "uninstall"]
-        ;;[:button.de.err "errors"]
-]
+        [:div.de
+         [:strong svg/settings-sm]
+         [:ul.menu-list
+          [:li {:on-click #(if usf (js/apis.openPath usf))} "Open settings"]
+          [:li {:on-click
+                #(let [confirm-fn
+                       (ui/make-confirm-modal
+                        {:title      (str "Are you sure uninstall plugin - " name "?")
+                         :on-confirm (fn [_ {:keys [close-fn]}]
+                                       (close-fn)
+                                       (plugin-handler/unregister-plugin id))})]
+                   (state/set-modal! confirm-fn))}
+           "Uninstall plugin"]]]]
+
        [:div.flex.items-center
         [:small.de (if disabled "Disabled" "Enabled")]
         (ui/toggle (not disabled)

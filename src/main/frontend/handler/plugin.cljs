@@ -113,8 +113,7 @@
                         (bean/->js
                          [;a-themes-provider
 ])
-                        true)
-           _ (p/delay 1000)])
+                        true)])
    #(do
       (state/set-state! :plugin/indicator-text "END")
       (callback))))
