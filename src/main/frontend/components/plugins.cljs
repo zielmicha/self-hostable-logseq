@@ -33,20 +33,24 @@
   [unpacked-pkg-path]
   (rum/use-effect!
    (fn []
-     (when unpacked-pkg-path
-       (doto js/LSPluginCore
-         (.once "error"
-                (fn [^js e]
-                  (case (keyword (aget e "name"))
-                    :IllegalPluginPackageError
-                    (notification/show! "Illegal Logseq plugin package." :error)
-                    :ExistedImportedPluginPackageError
-                    (notification/show! "Existed Imported plugin package." :error)
-                    :default)
-                  (plugin-handler/reset-unpacked-state)))
-         (.once "registered" #(plugin-handler/reset-unpacked-state))
-         (.register (bean/->js {:url unpacked-pkg-path}))))
-     #())
+     (let [err-handle
+           (fn [^js e]
+             (case (keyword (aget e "name"))
+               :IllegalPluginPackageError
+               (notification/show! "Illegal Logseq plugin package." :error)
+               :ExistedImportedPluginPackageError
+               (notification/show! "Existed Imported plugin package." :error)
+               :default)
+             (plugin-handler/reset-unpacked-state))
+           reg-handle #(plugin-handler/reset-unpacked-state)]
+       (when unpacked-pkg-path
+         (doto js/LSPluginCore
+           (.once "error" err-handle)
+           (.once "registered" reg-handle)
+           (.register (bean/->js {:url unpacked-pkg-path}))))
+       #(doto js/LSPluginCore
+          (.off "error" err-handle)
+          (.off "registered" reg-handle))))
    [unpacked-pkg-path])
 
   (when unpacked-pkg-path
