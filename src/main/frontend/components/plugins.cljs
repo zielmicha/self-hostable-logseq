@@ -18,16 +18,17 @@
     [:div.cp__themes-installed
      [:h2.mb-4.text-xl "Installed Themes"]
      (for [opt themes]
-       [:div.it.flex.px-3.py-3.mb-2.rounded-sm.justify-between
-        {:key (:url opt)}
-        [:section
-         [:strong.block (:name opt)]
-         [:small.opacity-30 (:description opt)]]
-        (let [current-selected (= selected (:url opt))]
-          [:a.text-blue-300.flex-shrink-0.flex.items-center.opacity-50
-           {:on-click #(do (js/LSPluginCore.selectTheme (if current-selected nil (clj->js opt)))
-                           (state/set-modal! nil))}
-           (if current-selected "cancel" "select")])])]))
+       (let [current-selected (= selected (:url opt))]
+           [:div.it.flex.px-3.py-2.mb-2.rounded-sm.justify-between
+            {:key   (:url opt)
+             :class [(if current-selected "selected")]
+             :on-click #(do (js/LSPluginCore.selectTheme (if current-selected nil (clj->js opt)))
+                            (state/set-modal! nil))}
+            [:section
+             [:strong.block (:name opt)]
+             [:small.opacity-30 (:description opt)]]
+            [:small.flex-shrink-0.flex.items-center.opacity-10
+             (if current-selected "current")]]))]))
 
 (rum/defc unpacked-plugin-loader
   [unpacked-pkg-path]
