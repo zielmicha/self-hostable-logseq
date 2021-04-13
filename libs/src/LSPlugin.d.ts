@@ -19,6 +19,10 @@ type ThemeOptions = {
 }
 
 type StyleString = string
+type StyleOptions = {
+  key?: string
+  style: StyleString
+}
 
 type UIBaseOptions = {
   key?: string
@@ -34,7 +38,9 @@ type UISlotIdentity = {
   slot: string // slot key
 }
 
-type UIOptions = UIBaseOptions & UISlotIdentity & UIPathIdentity
+type UISlotOptions = UIBaseOptions & UISlotIdentity
+type UIPathOptions = UIBaseOptions & UIPathIdentity
+type UIOptions = UIPathOptions & UISlotOptions
 
 interface LSPluginPkgConfig {
   id: PluginLocalIdentity
@@ -89,7 +95,7 @@ interface ILSPluginThemeManager extends EventEmitter {
   selectTheme (opt?: ThemeOptions): Promise<void>
 }
 
-type LSPluginUserEvents = 'ui:visible:changed'
+type LSPluginUserEvents = 'ui:visible:changed' | 'settings:changed'
 
 interface ILSPluginUser extends EventEmitter<LSPluginUserEvents> {
   /**
@@ -108,6 +114,11 @@ interface ILSPluginUser extends EventEmitter<LSPluginUserEvents> {
   baseInfo: LSPluginBaseInfo
 
   /**
+   * Plugin user settings
+   */
+  settings?: LSPluginBaseInfo.settings
+
+  /**
    * Ready for host connected
    */
   ready (model?: Record<string, any>): Promise<any>
@@ -117,19 +128,24 @@ interface ILSPluginUser extends EventEmitter<LSPluginUserEvents> {
   ready (model?: Record<string, any>, callback?: (e: any) => void | {}): Promise<any>
 
   /**
+   * @param model
+   */
+  provideModel (model: Record<string, any>): this
+
+  /**
    * @param theme options
    */
-  provideTheme (theme: ThemeOptions): void
+  provideTheme (theme: ThemeOptions): this
 
   /**
    * @param style
    */
-  provideStyle (style: StyleString): void
+  provideStyle (style: StyleString | StyleOptions): this
 
   /**
    * @param ui options
    */
-  provideUI (ui: UIOptions): void
+  provideUI (ui: UIOptions): this
 
   /**
    * @param attrs

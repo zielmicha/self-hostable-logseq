@@ -10,8 +10,15 @@ import {
   isObject
 } from './helpers'
 import Debug from 'debug'
-import { LSPluginCaller, LSPMSG_READY, LSPMSG_SYNC, LSPMSG } from './LSPlugin.caller'
-import { ILSPluginThemeManager, LSPluginPkgConfig, ThemeOptions, UIOptions } from './LSPlugin'
+import { LSPluginCaller, LSPMSG_READY, LSPMSG_SYNC, LSPMSG, LSPMSG_SETTINGS } from './LSPlugin.caller'
+import {
+  ILSPluginThemeManager,
+  LSPluginPkgConfig,
+  StyleOptions,
+  StyleString,
+  ThemeOptions,
+  UIOptions
+} from './LSPlugin'
 import { snakeCase } from 'snake-case'
 import DOMPurify from 'dompurify'
 import * as path from 'path'
@@ -200,10 +207,19 @@ function initProviderHandlers (pluginLocal: PluginLocal) {
     }
   })
 
-  pluginLocal.on(_('style'), (style: string) => {
+  pluginLocal.on(_('style'), (style: StyleString | StyleOptions) => {
+    let key: string | undefined
+
+    if (typeof style !== 'string') {
+      key = style.key
+      style = style.style
+    }
+
     if (!style || !style.trim()) return
+
     pluginLocal._dispose(
       setupInjectedStyle(style, {
+        'data-injected-style': key ? `${key}-${pluginLocal.id}` : '',
         'data-ref': pluginLocal.id
       })
     )
@@ -770,6 +786,7 @@ class LSPluginCore
 
         pluginLocal.settings?.on('change', (a) => {
           this.emit('settings-changed', pluginLocal.id, a)
+          pluginLocal.caller?.callUserModel(LSPMSG_SETTINGS, { payload: a })
         })
 
         this._registeredPlugins.set(pluginLocal.id, pluginLocal)

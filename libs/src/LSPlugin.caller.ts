@@ -10,6 +10,7 @@ const debug = Debug('LSPlugin:caller')
 type DeferredActor = ReturnType<typeof deferred>
 
 export const LSPMSG = '#lspmsg#'
+export const LSPMSG_SETTINGS = '#lspmsg#settings#'
 export const LSPMSG_SYNC = '#lspmsg#reply#'
 export const LSPMSG_READY = '#lspmsg#ready#'
 export const LSPMSGFn = (id: string) => `${LSPMSG}${id}`
@@ -60,9 +61,13 @@ class LSPluginCaller extends EventEmitter {
     const syncActors = new Map<number, DeferredActor>()
     const readyDeferred = deferred()
 
-    const model: any = this._userModel = {
+    const model: any = this._extendUserModel({
       [LSPMSG_READY]: async () => {
         await readyDeferred.resolve()
+      },
+
+      [LSPMSG_SETTINGS]: async ({ type, payload }) => {
+        caller.emit('settings:changed', payload)
       },
 
       [LSPMSG]: async ({ ns, type, payload }: any) => {
@@ -86,7 +91,7 @@ class LSPluginCaller extends EventEmitter {
       },
 
       ...userModel
-    }
+    })
 
     if (isShadowMode) {
       await readyDeferred.promise
@@ -243,6 +248,10 @@ class LSPluginCaller extends EventEmitter {
     } finally {
       this._status = undefined
     }
+  }
+
+  _extendUserModel (model: any) {
+    return Object.assign(this._userModel, model)
   }
 
   _getSandboxIframeContainer () {

@@ -51,6 +51,11 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
     private _caller: LSPluginCaller
   ) {
     super()
+
+    _caller.on('settings:changed', (payload) => {
+      Object.assign(this._baseInfo.settings, payload)
+      this.emit('settings:changed', payload)
+    })
   }
 
   async ready (
@@ -78,16 +83,24 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
     }
   }
 
-  provideTheme (theme: ThemeOptions): void {
+  provideModel (model: Record<string, any>) {
+    this.caller._extendUserModel(model)
+    return this
+  }
+
+  provideTheme (theme: ThemeOptions) {
     this.caller.call('provider:theme', theme)
+    return this
   }
 
   provideStyle (style: StyleString) {
     this.caller.call('provider:style', style)
+    return this
   }
 
   provideUI (ui: UIOptions) {
     this.caller.call('provider:ui', ui)
+    return this
   }
 
   updateSettings (attrs: Record<string, any>) {
@@ -133,6 +146,10 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
 
   get baseInfo (): LSPluginBaseInfo {
     return this._baseInfo
+  }
+
+  get settings () {
+    return this.baseInfo?.settings
   }
 
   get caller (): LSPluginCaller {

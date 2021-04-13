@@ -131,7 +131,15 @@ export function setupInjectedStyle (
   style: StyleString,
   attrs: Record<string, any>
 ) {
-  const el = document.createElement('style')
+  const key = attrs['data-injected-style']
+  let el = key && document.querySelector(`[data-injected-style=${key}]`)
+
+  if (el) {
+    el.textContent = style
+    return
+  }
+
+  el = document.createElement('style')
   el.textContent = style
 
   attrs && Object.entries(attrs).forEach(([k, v]) => {
@@ -159,7 +167,7 @@ export function setupInjectedUI (
     return
   }
 
-  const key = `${ui.key}-${pl.id}`
+  const key = `${ui.key}`
 
   let el = document.querySelector(`div[data-injected-ui="${key}"]`) as HTMLElement
 
@@ -189,7 +197,7 @@ export function setupInjectedUI (
       if (!trigger) return
 
       const msgType = trigger.dataset[`on${ucFirst(type)}`]
-      msgType && pl.caller?.callUserModel(msgType, transformableEvent(e))
+      msgType && pl.caller?.callUserModel(msgType, transformableEvent(trigger, e))
     }, false)
   })
 
@@ -198,15 +206,27 @@ export function setupInjectedUI (
   }
 }
 
-export function transformableEvent (e: Event) {
-  const target = e.target as any
+export function transformableEvent (target: HTMLElement, e: Event) {
   const obj: any = {}
 
   if (target) {
-    ['value', 'id', 'className',
-      'dataset'
+    const ds = target.dataset
+    const FLAG_RECT = 'rect'
+
+    ;['value', 'id', 'className',
+      'dataset', FLAG_RECT
     ].forEach((k) => {
-      let v: any = target[k]
+      let v: any
+
+      switch (k) {
+        case FLAG_RECT:
+          if (!ds.hasOwnProperty(FLAG_RECT)) return
+          v = target.getBoundingClientRect().toJSON()
+          break
+        default:
+          v = target[k]
+      }
+
       if (typeof v === 'object') {
         v = { ...v }
       }
