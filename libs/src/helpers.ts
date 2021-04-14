@@ -1,5 +1,6 @@
 import { StyleString, UIOptions } from './LSPlugin'
 import { PluginLocal } from './LSPlugin.core'
+import { snakeCase } from 'snake-case'
 
 interface IObject {
   [key: string]: any;
@@ -101,7 +102,10 @@ export function invokeHostExportedApi (
   method: string,
   ...args: Array<any>
 ) {
-  const fn = window.api[method] || window.apis[method]
+  const method1 = snakeCase(method)
+  const fn = window.api[method1] || window.apis[method1] ||
+    window.api[method] || window.apis[method]
+
   if (!fn) {
     throw new Error(`Not existed method #${method}`)
   }

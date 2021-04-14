@@ -244,10 +244,7 @@ function initApiProxyHandlers (pluginLocal: PluginLocal) {
   let _ = (label: string): any => `api:${label}`
 
   pluginLocal.on(_('call'), (payload) => {
-    const method = snakeCase(payload.method)
-
-    const fn = window.api[method] || (() => new Error(`can not resolve API#${method}`))
-    const rt = fn.apply(null, payload.args)
+    const rt = invokeHostExportedApi(payload.method, ...payload.args)
     const { _sync } = payload
 
     if (pluginLocal.shadow) {

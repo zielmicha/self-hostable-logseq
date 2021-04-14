@@ -53,8 +53,9 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
     super()
 
     _caller.on('settings:changed', (payload) => {
-      Object.assign(this._baseInfo.settings, payload)
-      this.emit('settings:changed', payload)
+      const b = Object.assign({}, this.settings)
+      const a = Object.assign(this._baseInfo.settings, payload)
+      this.emit('settings:changed', a, b)
     })
   }
 
