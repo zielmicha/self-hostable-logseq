@@ -79,7 +79,9 @@
        {:on-click #(plugin-handler/open-readme! url simple-markdown-display)}
        [:span name]
        [:sup.inline-block.px-1.text-xs.opacity-30 version]]
-      [:p.desc.text-xs.text-gray-400 description]
+      [:div.desc.text-xs.opacity-60
+       [:p description]
+       [:small (js/JSON.stringify (bean/->js settings))]]
       [:div.flag
        [:p.text-xs.text-gray-300.pr-2.flex.justify-between.dark:opacity-40
         [:small author]
@@ -140,12 +142,13 @@
   (state/set-modal! installed-themes))
 
 (rum/defc hook-ui-slot
-  [type opts]
-  (let [id (str "slot__" (util/rand-str 8))]
-    (rum/use-effect!
-     (fn []
-       (plugin-handler/hook-event :plugin type {:slot id})
-       #())
-     [])
-    [:div.lsp-hook-ui-slot
-     (merge opts {:id id})]))
+  ([type payload] (hook-ui-slot type payload nil))
+  ([type payload opts]
+   (let [id (str "slot__" (util/rand-str 8))]
+     (rum/use-effect!
+       (fn []
+         (plugin-handler/hook-event :plugin type {:slot id :payload payload})
+         #())
+       [])
+     [:div.lsp-hook-ui-slot
+      (merge opts {:id id})])))

@@ -171,7 +171,7 @@ export function setupInjectedUI (
     return
   }
 
-  const key = `${ui.key}`
+  const key = ui.key
 
   let el = document.querySelector(`div[data-injected-ui="${key}"]`) as HTMLElement
 
