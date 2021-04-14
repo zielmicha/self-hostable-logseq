@@ -4,6 +4,7 @@ import { LSPluginCaller } from './LSPlugin.caller'
 declare global {
   interface Window {
     api: any
+    apis: any
   }
 }
 
@@ -73,6 +74,7 @@ interface IAppProxy {
   replaceState: (k: string, params?: {}) => void
   getUserState: () => Promise<any>
   showMsg: (content: string, status?: 'success' | 'warning' | string) => void
+  setZoomFactor: (factor: number) => void
   onThemeModeChanged: IUserHook
   onPageFileMounted: IUserSlotHook
 }

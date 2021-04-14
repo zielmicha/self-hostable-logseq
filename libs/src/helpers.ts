@@ -101,7 +101,7 @@ export function invokeHostExportedApi (
   method: string,
   ...args: Array<any>
 ) {
-  const fn = window.api[method]
+  const fn = window.api[method] || window.apis[method]
   if (!fn) {
     throw new Error(`Not existed method #${method}`)
   }
