@@ -5,6 +5,27 @@ import { LSPluginUser } from './LSPlugin.user'
 // @ts-ignore
 const { importHTML, createSandboxContainer } = window.QSandbox || {}
 
+function userFetch (url, opts) {
+  if (!url.startsWith('http')) {
+    url = url.replace('file://', '')
+    return new Promise(async (resolve, reject) => {
+      try {
+        const content = await window.apis.doAction(['readFile', url])
+        resolve({
+          text () {
+            return content
+          }
+        })
+      } catch (e) {
+        console.error(e)
+        reject(e)
+      }
+    })
+  }
+
+  return fetch(url, opts)
+}
+
 class LSPluginShadowFrame extends EventEmitter<'mounted' | 'unmounted'> {
   private _frame?: HTMLElement
   private _root?: ShadowRoot
@@ -26,7 +47,7 @@ class LSPluginShadowFrame extends EventEmitter<'mounted' | 'unmounted'> {
 
     if (this.loaded || !entry) return
 
-    const { template, execScripts } = await importHTML(entry)
+    const { template, execScripts } = await importHTML(entry, { fetch: userFetch })
 
     this._mount(template, document.body)
 

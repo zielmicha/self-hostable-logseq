@@ -77,6 +77,7 @@ interface IAppProxy {
   setZoomFactor: (factor: number) => void
   onThemeModeChanged: IUserHook
   onPageFileMounted: IUserSlotHook
+  onBlockRendererMounted: IUserSlotHook
 }
 
 interface IEditorProxy {
