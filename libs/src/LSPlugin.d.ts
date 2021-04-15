@@ -112,7 +112,7 @@ interface ILSPluginUser extends EventEmitter<LSPluginUserEvents> {
   /**
    * Plugin user settings
    */
-  settings?: LSPluginBaseInfo.settings
+  settings?: LSPluginBaseInfo['settings']
 
   /**
    * Ready for host connected
