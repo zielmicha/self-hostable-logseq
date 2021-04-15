@@ -7,6 +7,13 @@ interface IObject {
   [key: string]: any;
 }
 
+declare global {
+  interface Window {
+    api: any
+    apis: any
+  }
+}
+
 export function isObject (item: any) {
   return (item === Object(item) && !Array.isArray(item))
 }

@@ -88,6 +88,24 @@
                 (remove nil?))]
     (vec (cons {:path (fix-win-path! path)} result))))
 
+(defn- get-ls-dotdir-root
+  []
+  (let [lg-dir (str (.getPath app "home") "/.logseq")]
+    (if-not (fs/existsSync lg-dir)
+      (and (fs/mkdirSync lg-dir) lg-dir)
+      lg-dir)))
+
+(defn- get-ls-default-plugins
+  []
+  (let [plugins-root (path/join (get-ls-dotdir-root) "plugins")
+        _ (if-not (fs/existsSync plugins-root)
+            (fs/mkdirSync plugins-root))
+        dirs (js->clj (fs/readdirSync plugins-root #js{"withFileTypes" true}))
+        dirs (->> dirs
+                  (filter #(.isDirectory %))
+                  (map #(path/join plugins-root (.-name %))))]
+    dirs))
+
 ;; TODO: Is it going to be slow if it's a huge directory
 (defmethod handle :openDir [^js window _messages]
   (let [result (.showOpenDialogSync dialog (bean/->js
@@ -162,11 +180,11 @@
         path (first result)]
     path))
 
-(defmethod handle :getLogseqUserRoot []
-  (let [lg-dir (str (.getPath app "home") "/.logseq")]
-    (if-not (fs/existsSync lg-dir)
-      (and (fs/mkdirSync lg-dir) lg-dir)
-      lg-dir)))
+(defmethod handle :getLogseqDotDirRoot []
+  (get-ls-dotdir-root))
+
+(defmethod handle :getUserDefaultPlugins []
+  (get-ls-default-plugins))
 
 (defmethod handle :default [args]
   (println "Error: no ipc handler for: " (bean/->js args)))

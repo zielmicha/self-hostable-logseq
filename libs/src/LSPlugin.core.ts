@@ -560,7 +560,6 @@ class PluginLocal
       await this.unload()
 
       if (this.isInstalledInUserRoot) {
-        // TODO: delete plugin local files
         debug('TODO: remove plugin local files from user home root :)')
       }
 

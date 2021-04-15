@@ -1,13 +1,6 @@
 import EventEmitter from 'eventemitter3'
 import { LSPluginCaller } from './LSPlugin.caller'
 
-declare global {
-  interface Window {
-    api: any
-    apis: any
-  }
-}
-
 type PluginLocalIdentity = string
 
 type ThemeOptions = {

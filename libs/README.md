@@ -1,13 +1,17 @@
-## @logseq/libs [WIP]
+## @logseq/libs
 
-🚀 Logseq SDK libraries.
+🚀 Logseq SDK libraries [WIP].
 
 #### Installation
 
 ```shell
-yarn add @logseq/libs -D
+yarn add @logseq/libs
 ```
 
 #### Usage
 
-FIXME
+Load `logseq` plugin sdk as global namespace
+
+```js
+import "@logseq/libs"
+```
