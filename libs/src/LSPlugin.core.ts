@@ -446,7 +446,14 @@ class PluginLocal
   }
 
   async _tryToNormalizeEntry () {
-    let { entry } = this.options
+    let { entry, settings } = this.options
+    let devEntry = settings?.get('_devEntry')
+
+    if (devEntry) {
+      this._options.entry = devEntry
+      return
+    }
+
     if (!entry.endsWith('.js')) return
 
     let sdkPath = await invokeHostExportedApi('_callApplication', 'getAppPath')
