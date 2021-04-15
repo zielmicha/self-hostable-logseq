@@ -7,7 +7,7 @@ import {
   setupInjectedUI,
   deferred,
   invokeHostExportedApi,
-  isObject
+  isObject, withFileProtocol
 } from './helpers'
 import Debug from 'debug'
 import { LSPluginCaller, LSPMSG_READY, LSPMSG_SYNC, LSPMSG, LSPMSG_SETTINGS } from './LSPlugin.caller'
@@ -445,6 +445,30 @@ class PluginLocal
     }
   }
 
+  async _tryToNormalizeEntry () {
+    let { entry } = this.options
+    if (!entry.endsWith('.js')) return
+
+    let sdkPath = await invokeHostExportedApi('_callApplication', 'getAppPath')
+    let entryPath = await invokeHostExportedApi(
+      'write_user_tmp_file',
+      `${this._id}_index.html`,
+      `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>logseq plugin entry</title>
+    <script src="${sdkPath}/js/lsplugin.user.js"></script>
+  </head>
+  <body>
+  <div id="app"></div>
+  <script src="${entry}"></script>
+  </body>
+</html>`)
+
+    this._options.entry = withFileProtocol(entryPath)
+  }
+
   async _loadConfigThemes (themes: Array<ThemeOptions>) {
     themes.forEach((options) => {
       if (!options.url) return
@@ -488,6 +512,8 @@ class PluginLocal
       if (this.disabled || !this.options.entry) {
         return
       }
+
+      await this._tryToNormalizeEntry()
 
       this._caller = new LSPluginCaller(this)
       await this._caller.connectToChild()

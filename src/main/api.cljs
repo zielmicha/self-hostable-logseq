@@ -59,6 +59,17 @@
           path (util/node-path.join path "package.json")]
       (fs/write-file! repo "" path (js/JSON.stringify data nil 2) {:skip-mtime? true}))))
 
+(def ^:export write_user_tmp_file
+  (fn [file content]
+    (p/let [repo ""
+            path (ipc/ipc "getLogseqUserRoot")
+            path (util/node-path.join path "tmp")
+            exist? (fs/file-exists? path "")
+            _ (when-not exist? (fs/mkdir! path))
+            path (util/node-path.join path file)
+            _ (fs/write-file! repo "" path content {:skip-mtime? true})]
+      path)))
+
 (def ^:export load_user_preferences
   (fn []
     (p/let [repo ""

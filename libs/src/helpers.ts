@@ -1,6 +1,7 @@
 import { StyleString, UIOptions } from './LSPlugin'
 import { PluginLocal } from './LSPlugin.core'
 import { snakeCase } from 'snake-case'
+import path from 'path'
 
 interface IObject {
   [key: string]: any;
@@ -61,6 +62,17 @@ export function genID () {
 
 export function ucFirst (str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+export function withFileProtocol (path: string) {
+  if (!path) return ''
+  const reg = /^(http|file|assets)/
+
+  if (!reg.test(path)) {
+    path = 'file://' + path
+  }
+
+  return path
 }
 
 /**
