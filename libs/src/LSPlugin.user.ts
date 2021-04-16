@@ -31,6 +31,8 @@ type uiState = {
   visible: boolean
 }
 
+const KEY_MAIN_UI = 0
+
 /**
  * User plugin instance
  */
@@ -55,7 +57,7 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
     _caller.on('settings:changed', (payload) => {
       const b = Object.assign({}, this.settings)
       const a = Object.assign(this._baseInfo.settings, payload)
-      this.emit('settings:changed', {...a}, b)
+      this.emit('settings:changed', { ...a }, b)
     })
   }
 
@@ -118,27 +120,32 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
   }
 
   hideMainUI (): void {
-    const payload = { key: 0, visible: false }
+    const payload = { key: KEY_MAIN_UI, visible: false }
     this.caller.call('main-ui:visible', payload)
     this.emit('ui:visible:changed', payload)
     this._ui.set(payload.key, payload)
   }
 
   showMainUI (): void {
-    const payload = { key: 0, visible: true }
+    const payload = { key: KEY_MAIN_UI, visible: true }
     this.caller.call('main-ui:visible', payload)
     this.emit('ui:visible:changed', payload)
     this._ui.set(payload.key, payload)
   }
 
   toggleMainUI (): void {
-    const payload = { key: 0, toggle: true }
+    const payload = { key: KEY_MAIN_UI, toggle: true }
     const state = this._ui.get(payload.key)
     if (state && state.visible) {
       this.hideMainUI()
     } else {
       this.showMainUI()
     }
+  }
+
+  get isMainUIVisible (): boolean {
+    const state = this._ui.get(0)
+    return Boolean(state && state.visible)
   }
 
   get connected (): boolean {

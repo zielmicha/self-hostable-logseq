@@ -162,6 +162,8 @@ interface ILSPluginUser extends EventEmitter<LSPluginUserEvents> {
 
   toggleMainUI (): void
 
+  isMainUIVisible: boolean
+
   App: IAppProxy
   Editor: IEditorProxy
   DB: IDBProxy
