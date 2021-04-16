@@ -9,6 +9,7 @@
             [cljs-bean.core :as bean]
             [frontend.state :as state]
             [frontend.components.plugins :as plugins]
+            [frontend.handler.plugin :as plugin-handler]
             [frontend.handler.notification :as notification]
             [datascript.core :as d]
             [frontend.fs :as fs]
@@ -62,7 +63,7 @@
 (def ^:export write_user_tmp_file
   (fn [file content]
     (p/let [repo ""
-            path (ipc/ipc "getLogseqUserRoot")
+            path (plugin-handler/get-ls-dotdir-root)
             path (util/node-path.join path "tmp")
             exist? (fs/file-exists? path "")
             _ (when-not exist? (fs/mkdir! path))
@@ -73,7 +74,7 @@
 (def ^:export load_user_preferences
   (fn []
     (p/let [repo ""
-            path (ipc/ipc "getLogseqUserRoot")
+            path (plugin-handler/get-ls-dotdir-root)
             path (util/node-path.join path "preferences.json")
             _ (fs/create-if-not-exists repo "" path)
             json (fs/read-file "" path)
@@ -84,14 +85,14 @@
   (fn [^js data]
     (when data
       (p/let [repo ""
-              path (ipc/ipc "getLogseqUserRoot")
+              path (plugin-handler/get-ls-dotdir-root)
               path (util/node-path.join path "preferences.json")]
         (fs/write-file! repo "" path (js/JSON.stringify data nil 2) {:skip-mtime? true})))))
 
 (def ^:export load_plugin_user_settings
   (fn [key]
     (p/let [repo ""
-            path (ipc/ipc "getLogseqUserRoot")
+            path (plugin-handler/get-ls-dotdir-root)
             exist? (fs/file-exists? path "settings")
             _ (when-not exist? (fs/mkdir! (util/node-path.join path "settings")))
             path (util/node-path.join path "settings" (str key ".json"))
@@ -102,7 +103,7 @@
 (def ^:export save_plugin_user_settings
   (fn [key ^js data]
     (p/let [repo ""
-            path (ipc/ipc "getLogseqUserRoot")
+            path (plugin-handler/get-ls-dotdir-root)
             path (util/node-path.join path "settings" (str key ".json"))]
       (fs/write-file! repo "" path (js/JSON.stringify data nil 2) {:skip-mtime? true}))))
 

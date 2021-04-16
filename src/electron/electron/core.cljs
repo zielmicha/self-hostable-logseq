@@ -34,6 +34,7 @@
                    :nodeIntegration         false
                    :nodeIntegrationInWorker false
                    :contextIsolation        true
+                   :webSecurity false
                    :spellcheck              true
                    :preload                 (path/join js/__dirname "js/preload.js")}}
         url MAIN_WINDOW_ENTRY
@@ -180,7 +181,7 @@
 
                ;; main window events
                (.on win "close" (fn [e]
-                                  (.preventDefault e)
+                                  (and prod? (.preventDefault e))
                                   (let [web-contents (. win -webContents)]
                                     (.send web-contents "persistent-dbs"))
                                   (async/go

@@ -130,7 +130,7 @@
           "Open plugin preferences file"]
          :intent "logseq"
          :on-click (fn []
-                     (p/let [root (ipc/ipc "getLogseqUserRoot")]
+                     (p/let [root (plugin-handler/get-ls-dotdir-root)]
                        (js/apis.openPath (str root "/preferences.json"))))))]
 
      [:div.cp__plugins-item-lists.grid-cols-1.md:grid-cols-2.lg:grid-cols-3

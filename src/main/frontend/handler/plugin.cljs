@@ -2,6 +2,7 @@
   (:require [promesa.core :as p]
             [rum.core :as rum]
             [frontend.util :as util]
+            [frontend.fs :as fs]
             [frontend.handler.notification :as notifications]
             [frontend.state :as state]
             [electron.ipc :as ipc]
@@ -52,6 +53,19 @@
     :plugin (hook-plugin-app type payload)
     :default))
 
+(defn get-ls-dotdir-root
+  []
+  (ipc/ipc "getLogseqDotDirRoot"))
+
+(defn- get-user-default-plugins
+  []
+  (p/catch
+   (p/let [files ^js (ipc/ipc "getUserDefaultPlugins")
+           files (js->clj files)]
+     (map #(hash-map :url %) files))
+   (fn [e]
+     (js/console.error e))))
+
 ;; components
 (rum/defc lsp-indicator < rum/reactive
   []
@@ -87,7 +101,7 @@
   (state/set-state! :plugin/indicator-text "⏳")
 
   (p/then
-   (p/let [root (ipc/ipc "getLogseqUserRoot")
+   (p/let [root (get-ls-dotdir-root)
            _ (.setupPluginCore js/LSPlugin (bean/->js {:localUserConfigRoot root}))
            _ (doto js/LSPluginCore
                (.on "registered"
@@ -109,11 +123,10 @@
                                            (when (and settings
                                                       (contains? (:plugin/installed-plugins @state/state) id))
                                              (update-plugin-settings id (bean/->clj settings)))))))
-           _ (.register js/LSPluginCore
-                        (bean/->js
-                         [;a-themes-provider
-])
-                        true)])
+
+           default-plugins (get-user-default-plugins)
+
+           _ (.register js/LSPluginCore (bean/->js (if (seq default-plugins) default-plugins [])) true)])
    #(do
       (state/set-state! :plugin/indicator-text "END")
       (callback))))
