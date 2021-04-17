@@ -68,7 +68,7 @@
 (rum/defc plugin-item-card
   [{:keys [id name settings version url description author icon usf] :as item}]
   (let [disabled (:disabled settings)]
-    [:div.cp__plugins-item-card {:key id}
+    [:div.cp__plugins-item-card
      [:div.l.link-block
       {:on-click #(plugin-handler/open-readme! url simple-markdown-display)}
       (if icon
@@ -135,7 +135,7 @@
 
      [:div.cp__plugins-item-lists.grid-cols-1.md:grid-cols-2.lg:grid-cols-3
       (for [[_ item] installed-plugins]
-        (plugin-item-card item))]]))
+        (rum/with-key (plugin-item-card item) (:id item)))]]))
 
 (defn open-select-theme!
   []

@@ -899,20 +899,22 @@ class LSPluginCore
     // this.emit('disabled', p)
   }
 
-  async _hook (ns: string, type: string, payload?: any) {
+  async _hook (ns: string, type: string, payload?: any, pid?: string) {
     for (const [_, p] of this._registeredPlugins) {
-      p.caller && p.caller.callUserModel(LSPMSG, {
-        ns, type: snakeCase(type), payload
-      })
+      if (!pid || pid === p.id) {
+        p.caller?.callUserModel(LSPMSG, {
+          ns, type: snakeCase(type), payload
+        })
+      }
     }
   }
 
-  hookApp (type: string, payload?: any) {
-    this._hook(`hook:app`, type, payload)
+  hookApp (type: string, payload?: any, pid?: string) {
+    this._hook(`hook:app`, type, payload, pid)
   }
 
-  hookEditor (type: string, payload?: any) {
-    this._hook(`hook:editor`, type, payload)
+  hookEditor (type: string, payload?: any, pid?: string) {
+    this._hook(`hook:editor`, type, payload, pid)
   }
 
   _execDirective (tag: string, ...params: any[]) {

@@ -110,6 +110,7 @@
     :plugin/indicator-text        nil
     :plugin/installed-plugins     {}
     :plugin/installed-themes      []
+    :plugin/installed-commands    {}
     :plugin/selected-theme        nil
     :plugin/selected-unpacked-pkg nil
     :plugin/active-readme         nil
@@ -1013,6 +1014,10 @@
 (defn get-commands
   []
   (:commands (get-config)))
+
+(defn get-plugins-commands
+  []
+  (mapcat seq (flatten (vals (:plugin/installed-commands @state)))))
 
 (defn get-scheduled-future-days
   []

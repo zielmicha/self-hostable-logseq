@@ -1,5 +1,6 @@
 import EventEmitter from 'eventemitter3'
 import { LSPluginCaller } from './LSPlugin.caller'
+import { LSPluginUser } from './LSPlugin.user'
 
 type PluginLocalIdentity = string
 
@@ -62,6 +63,9 @@ type IHookEvent = {
 type IUserHook = (callback: (e: IHookEvent) => void) => void
 type IUserSlotHook = (callback: (e: IHookEvent & UISlotIdentity) => void) => void
 
+type EditorActionTag = 'editor/input' | 'editor/hook'
+type SlashCommandAction = [EditorActionTag, ...args: any]
+
 interface IAppProxy {
   pushState: (k: string, params?: {}) => void
   replaceState: (k: string, params?: {}) => void
@@ -75,6 +79,8 @@ interface IAppProxy {
 
 interface IEditorProxy {
   getCurrentPageBlocksTree: <T = any> () => Promise<T>
+
+  registerSlashCommand (this: LSPluginUser, cmd: string, actions: Array<SlashCommandAction>): boolean
 }
 
 interface IDBProxy {

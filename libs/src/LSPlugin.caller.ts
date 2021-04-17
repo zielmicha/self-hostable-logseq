@@ -121,6 +121,14 @@ class LSPluginCaller extends EventEmitter {
         return actor?.promise as Promise<any>
       }
 
+      this._callUserModel = async (type, payload) => {
+        try {
+          model[type](payload)
+        } catch (e) {
+          debug(`model method #${type} not existed`)
+        }
+      }
+
       // actors GC
       syncGCTimer = setInterval(() => {
         if (syncActors.size > 100) {

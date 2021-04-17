@@ -107,6 +107,13 @@
             path (util/node-path.join path "settings" (str key ".json"))]
       (fs/write-file! repo "" path (js/JSON.stringify data nil 2) {:skip-mtime? true}))))
 
+(def ^:export register_plugin_slash_command
+  (fn [pid ^js cmd-actions]
+    (let [[cmd actions] (bean/->clj cmd-actions)]
+      (plugin-handler/register-plugin-slash-command
+       pid [cmd (mapv #(into [(keyword (first %))]
+                             (rest %)) actions)]))))
+
 ;; app
 (def ^:export push_state
   (fn [^js k ^js params]

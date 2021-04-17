@@ -5,8 +5,10 @@
             [frontend.fs :as fs]
             [frontend.handler.notification :as notifications]
             [frontend.state :as state]
+            [medley.core :as md]
             [electron.ipc :as ipc]
-            [cljs-bean.core :as bean]))
+            [cljs-bean.core :as bean]
+            [clojure.string :as string]))
 
 (defonce lsp-enabled? (util/electron?))
 
@@ -18,6 +20,18 @@
 (defn unregister-plugin
   [id]
   (js/LSPluginCore.unregister id))
+
+(defn register-plugin-slash-command
+  [id [cmd actions]]
+  (if-let [id (keyword id)]
+    (when (contains? (:plugin/installed-plugins @state/state) id)
+      (do (swap! state/state update-in [:plugin/installed-commands id]
+                 (fnil merge {}) (hash-map cmd (mapv #(conj % {:pid id}) actions)))
+          true))))
+
+(defn unregister-plugin-slash-command
+  [id]
+  (swap! state/state md/dissoc-in [:plugin/installed-commands (keyword id)]))
 
 (defn update-plugin-settings
   [id settings]
@@ -42,15 +56,18 @@
   []
   (state/set-state! :plugin/selected-unpacked-pkg nil))
 
-(defn- hook-plugin-app
-  [type payload]
+(defn hook-plugin-app
+  [type payload plugin-id]
   (when lsp-enabled?
-    (js/LSPluginCore.hookApp (name type) (bean/->js payload))))
+    (js/LSPluginCore.hookEditor
+     (name type)
+     (bean/->js payload)
+     (if (keyword? plugin-id) (name plugin-id) plugin-id))))
 
 (defn hook-event
   [ns type payload]
   (case ns
-    :plugin (hook-plugin-app type payload)
+    :plugin (hook-plugin-app type payload nil)
     :default))
 
 (defn get-ls-dotdir-root
@@ -108,16 +125,25 @@
                     (fn [^js pl]
                       (register-plugin
                        (bean/->clj (.parse js/JSON (.stringify js/JSON pl))))))
-               (.on "unregistered" #(when % (swap! state/state util/dissoc-in [:plugin/installed-plugins (keyword %)])))
+
+               (.on "unregistered" #((fn [pid]
+                                       (let [pid (keyword pid)]
+                                         ;; plugins
+                                         (swap! state/state util/dissoc-in [:plugin/installed-plugins (keyword pid)])
+                                         ;; commands
+                                         (unregister-plugin-slash-command pid)))))
+
                (.on "theme-changed" (fn [^js themes]
                                       (swap! state/state assoc :plugin/installed-themes
                                              (vec (mapcat (fn [[_ vs]] (bean/->clj vs)) (bean/->clj themes))))))
+
                (.on "theme-selected" (fn [^js opts]
                                        (let [opts (bean/->clj opts)
                                              url (:url opts)
                                              mode (:mode opts)]
                                          (when mode (state/set-theme! mode))
                                          (state/set-state! :plugin/selected-theme url))))
+
                (.on "settings-changed" (fn [id ^js settings]
                                          (let [id (keyword id)]
                                            (when (and settings

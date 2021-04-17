@@ -1,10 +1,10 @@
-import { deepMerge } from './helpers'
+import { deepMerge, invokeHostExportedApi } from './helpers'
 import { LSPluginCaller } from './LSPlugin.caller'
 import {
   IAppProxy, IDBProxy,
   IEditorProxy,
   ILSPluginUser,
-  LSPluginBaseInfo, LSPluginUserEvents,
+  LSPluginBaseInfo, LSPluginUserEvents, SlashCommandAction,
   StyleString,
   ThemeOptions,
   UIOptions
@@ -23,7 +23,53 @@ declare global {
 const debug = Debug('LSPlugin:user')
 
 const app: Partial<IAppProxy> = {}
-const editor: Partial<IEditorProxy> = {}
+
+let registeredSlashCmdUid = 0
+
+const editor: Partial<IEditorProxy> = {
+  registerSlashCommand (
+    this: LSPluginUser,
+    cmd: string,
+    actions: Array<SlashCommandAction>
+  ) {
+    debug('Register slash command #', this.baseInfo.id, cmd, actions)
+
+    actions = actions.map((it) => {
+      const [tag, ...args] = it
+
+      switch (tag) {
+        case 'editor/hook':
+          let key = args[0]
+          let fn = () => {
+            this.caller?.callUserModel(key)
+          }
+
+          if (typeof key === 'function') {
+            fn = key
+          }
+
+          const type = `SlashCommandHook${cmd}${registeredSlashCmdUid}`
+
+          it[1] = type
+
+          // register command listener
+          this.Editor['on' + type](fn)
+          break
+        default:
+      }
+
+      return it
+    })
+
+    this.caller?.call(`api:call`, {
+      method: 'register-plugin-slash-command',
+      args: [this.baseInfo.id, [cmd, actions]]
+    })
+
+    return false
+  }
+}
+
 const db: Partial<IDBProxy> = {}
 
 type uiState = {
@@ -168,6 +214,7 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
     target: any,
     tag?: 'app' | 'editor' | 'db'
   ) {
+    const that = this
     const caller = this.caller
 
     return new Proxy(target, {
@@ -176,7 +223,8 @@ export class LSPluginUser extends EventEmitter<LSPluginUserEvents> implements IL
 
         return function (this: any, ...args: any) {
           if (origMethod) {
-            origMethod.apply(this, args)
+            const ret = origMethod.apply(that, args)
+            if (ret === false) return
           }
 
           // Handle hook
