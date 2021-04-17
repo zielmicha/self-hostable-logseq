@@ -631,7 +631,7 @@ class PluginLocal
   get isInstalledInUserRoot () {
     const userRoot = this._ctx.options.localUserConfigRoot
     const plugRoot = this._localRoot
-    return userRoot && plugRoot && userRoot.startsWith(plugRoot)
+    return userRoot && plugRoot && plugRoot.startsWith(userRoot)
   }
 
   get loaded () {
