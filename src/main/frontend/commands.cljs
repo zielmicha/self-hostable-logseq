@@ -371,7 +371,7 @@
 (defmulti handle-step first)
 
 (defmethod handle-step :editor/hook [[_ event {:keys [pid]}]]
-  (plugin-handler/hook-plugin-app event nil pid))
+  (plugin-handler/hook-plugin-editor event nil pid))
 
 (defmethod handle-step :editor/input [[_ value option]]
   (when-let [input-id (state/get-edit-input-id)]

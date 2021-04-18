@@ -14,7 +14,7 @@
       (if (= theme "dark")                                 ;; for tailwind dark mode
         (.add cls "dark")
         (.remove cls "dark"))
-      (plugin-handler/hook-event :plugin :theme-mode-changed theme))
+      (plugin-handler/hook-plugin-app :theme-mode-changed theme nil))
    [theme])
 
   (rum/use-effect!

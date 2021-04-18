@@ -147,7 +147,7 @@
    (let [id (str "slot__" (util/rand-str 8))]
      (rum/use-effect!
        (fn []
-         (plugin-handler/hook-event :plugin type {:slot id :payload payload})
+         (plugin-handler/hook-plugin-app type {:slot id :payload payload} nil)
          #())
        [])
      [:div.lsp-hook-ui-slot

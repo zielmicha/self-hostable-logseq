@@ -17,6 +17,7 @@
             [frontend.handler.expand :as expand]
             [frontend.components.svg :as svg]
             [frontend.components.datetime :as datetime-comp]
+            [frontend.components.plugins :as plugins]
             [frontend.ui :as ui]
             [frontend.handler.editor :as editor-handler]
             [frontend.handler.block :as block-handler]
@@ -910,6 +911,11 @@
             :else                       ;TODO: maybe collections?
             nil))
 
+        (and (util/electron?)
+             (= name "renderer"))
+        (do (js/console.log item)
+          (plugins/hook-ui-slot :block-renderer-mounted arguments))
+
         :else
         (if-let [block-uuid (:block/uuid config)]
           (let [format (get-in config [:block :block/format] :markdown)
@@ -1357,30 +1363,30 @@
         button (gobj/get e "buttons")]
     (when (contains? #{1 0} button)
       (when-not (or (util/link? target)
-                   (util/input? target)
-                   (util/details-or-summary? target)
-                   (and (util/sup? target)
-                        (d/has-class? target "fn"))
-                   (d/has-class? target "image-resize"))
-       (editor-handler/clear-selection! nil)
-       (editor-handler/unhighlight-block!)
-       (let [properties-hidden? (text/properties-hidden? properties)
-             content (text/remove-level-spaces content format)
-             content (if properties-hidden? (text/remove-properties! content) content)
-             block (db/pull [:block/uuid (:block/uuid block)])
-             f #(let [cursor-range (util/caret-range (gdom/getElement block-id))]
-                  (state/set-editing!
-                   edit-input-id
-                   content
-                   block
-                   cursor-range))]
+                    (util/input? target)
+                    (util/details-or-summary? target)
+                    (and (util/sup? target)
+                         (d/has-class? target "fn"))
+                    (d/has-class? target "image-resize"))
+        (editor-handler/clear-selection! nil)
+        (editor-handler/unhighlight-block!)
+        (let [properties-hidden? (text/properties-hidden? properties)
+              content (text/remove-level-spaces content format)
+              content (if properties-hidden? (text/remove-properties! content) content)
+              block (db/pull [:block/uuid (:block/uuid block)])
+              f #(let [cursor-range (util/caret-range (gdom/getElement block-id))]
+                   (state/set-editing!
+                    edit-input-id
+                    content
+                    block
+                    cursor-range))]
          ;; wait a while for the value of the caret range
-         (if (util/ios?)
-           (f)
-           (js/setTimeout f 5)))
+          (if (util/ios?)
+            (f)
+            (js/setTimeout f 5)))
 
-       (when-not (state/get-selection-start-block)
-         (when block-id (state/set-selection-start-block! block-id)))))))
+        (when-not (state/get-selection-start-block)
+          (when block-id (state/set-selection-start-block! block-id)))))))
 
 (defn- block-content-on-drag-over
   [event uuid]
@@ -1415,7 +1421,7 @@
         mouse-down-key (if (util/ios?)
                          :on-click
                          :on-mouse-down ; TODO: it seems that Safari doesn't work well with on-mouse-down
-                         )
+)
         attrs {:blockid       (str uuid)
                mouse-down-key (fn [e]
                                 (block-content-on-mouse-down e block block-id properties content format edit-input-id))
@@ -1457,11 +1463,11 @@
         (do
           [:div.block-body {:style {:display (if (and collapsed? (seq title)) "none" "")}}
           ;; TODO: consistent id instead of the idx (since it could be changed later)
-          (let [body (block/trim-break-lines! (:block/body block))]
-            (for [[idx child] (medley/indexed body)]
-              (when-let [block (markup-element-cp config child)]
-                (rum/with-key (block-child block)
-                  (str uuid "-" idx)))))]))]
+           (let [body (block/trim-break-lines! (:block/body block))]
+             (for [[idx child] (medley/indexed body)]
+               (when-let [block (markup-element-cp config child)]
+                 (rum/with-key (block-child block)
+                   (str uuid "-" idx)))))]))]
      (when (and block-refs-count (> block-refs-count 0))
        [:div
         [:a.open-block-ref-link.bg-base-2
@@ -1949,7 +1955,7 @@
                                              ;; :breadcrumb-show? true
                                              :group-by-page? blocks-grouped-by-page?
                                              ;; :ref? true
-                                             )
+)
                                 children?
                                 (assoc :ref? true))
                        {:style {:margin-top "0.25rem"

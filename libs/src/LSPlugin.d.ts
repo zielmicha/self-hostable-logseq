@@ -63,8 +63,8 @@ type IHookEvent = {
 type IUserHook = (callback: (e: IHookEvent) => void) => void
 type IUserSlotHook = (callback: (e: IHookEvent & UISlotIdentity) => void) => void
 
-type EditorActionTag = 'editor/input' | 'editor/hook'
-type SlashCommandAction = [EditorActionTag, ...args: any]
+type SlashCommandActionTag = 'editor/input' | 'editor/hook' | 'editor/clear-current-slash'
+type SlashCommandAction = [SlashCommandActionTag, ...args: any]
 
 interface IAppProxy {
   pushState: (k: string, params?: {}) => void

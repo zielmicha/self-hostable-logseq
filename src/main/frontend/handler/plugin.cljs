@@ -21,6 +21,10 @@
   [id]
   (js/LSPluginCore.unregister id))
 
+(defn host-mounted!
+  []
+  (and lsp-enabled? (js/LSPluginCore.hostMounted)))
+
 (defn register-plugin-slash-command
   [id [cmd actions]]
   (if-let [id (keyword id)]
@@ -56,19 +60,22 @@
   []
   (state/set-state! :plugin/selected-unpacked-pkg nil))
 
-(defn hook-plugin-app
-  [type payload plugin-id]
+(defn hook-plugin
+  [tag type payload plugin-id]
   (when lsp-enabled?
-    (js/LSPluginCore.hookEditor
-     (name type)
-     (bean/->js payload)
-     (if (keyword? plugin-id) (name plugin-id) plugin-id))))
+    (js-invoke js/LSPluginCore
+               (str "hook" (string/capitalize (name tag)))
+               (name type)
+               (bean/->js payload)
+               (if (keyword? plugin-id) (name plugin-id) plugin-id))))
 
-(defn hook-event
-  [ns type payload]
-  (case ns
-    :plugin (hook-plugin-app type payload nil)
-    :default))
+(defn hook-plugin-app
+  ([type payload] (hook-plugin-app type payload nil))
+  ([type payload plugin-id] (hook-plugin :app type payload plugin-id)))
+
+(defn hook-plugin-editor
+  ([type payload] (hook-plugin-editor type payload nil))
+  ([type payload plugin-id] (hook-plugin :editor type payload plugin-id)))
 
 (defn get-ls-dotdir-root
   []

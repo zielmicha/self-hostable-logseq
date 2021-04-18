@@ -226,10 +226,10 @@ function initProviderHandlers (pluginLocal: PluginLocal) {
   })
 
   pluginLocal.on(_('ui'), (ui: UIOptions) => {
-    // safe template
-    ui.template = DOMPurify.sanitize(ui.template)
-
     pluginLocal._onHostMounted(() => {
+      // safe template
+      ui.template = DOMPurify.sanitize(ui.template)
+
       pluginLocal._dispose(
         setupInjectedUI.call(pluginLocal,
           ui, {
@@ -614,17 +614,12 @@ class PluginLocal
   }
 
   _onHostMounted (callback: () => void) {
-    const actor = this._ctx.readyIndicator
+    const actor = this._ctx.hostMountedActor
 
-    if (false /*!actor || actor.settled*/) {
+    if (!actor || actor.settled) {
       callback()
     } else {
-      const expiredTime = Date.now() - actor!.created
-
-      // TODO: Fix impl
-      actor?.promise.then(() => {
-        setTimeout(callback, expiredTime > 3000 ? 0 : 1000)
-      })
+      actor?.promise.then(callback)
     }
   }
 
@@ -714,6 +709,7 @@ class LSPluginCore
 
   private _isRegistering = false
   private _readyIndicator?: DeferredActor
+  private _hostMountedActor: DeferredActor = deferred()
   private _userPreferences: Partial<UserPreferences> = {}
   private _registeredThemes = new Map<PluginLocalIdentity, Array<ThemeOptions>>()
   private _registeredPlugins = new Map<PluginLocalIdentity, PluginLocal>()
@@ -935,6 +931,10 @@ class LSPluginCore
     return p
   }
 
+  hostMounted () {
+    this._hostMountedActor.resolve()
+  }
+
   get registeredPlugins (): Map<PluginLocalIdentity, PluginLocal> {
     return this._registeredPlugins
   }
@@ -945,6 +945,10 @@ class LSPluginCore
 
   get readyIndicator (): DeferredActor | undefined {
     return this._readyIndicator
+  }
+
+  get hostMountedActor (): DeferredActor {
+    return this._hostMountedActor
   }
 
   get isRegistering (): boolean {
