@@ -29,10 +29,10 @@ let registeredSlashCmdUid = 0
 const editor: Partial<IEditorProxy> = {
   registerSlashCommand (
     this: LSPluginUser,
-    cmd: string,
+    tag: string,
     actions: Array<SlashCommandAction>
   ) {
-    debug('Register slash command #', this.baseInfo.id, cmd, actions)
+    debug('Register slash command #', this.baseInfo.id, tag, actions)
 
     actions = actions.map((it) => {
       const [tag, ...args] = it
@@ -48,7 +48,7 @@ const editor: Partial<IEditorProxy> = {
             fn = key
           }
 
-          const type = `SlashCommandHook${cmd}${registeredSlashCmdUid}`
+          const type = `SlashCommandHook${tag}${registeredSlashCmdUid}`
 
           it[1] = type
 
@@ -63,7 +63,7 @@ const editor: Partial<IEditorProxy> = {
 
     this.caller?.call(`api:call`, {
       method: 'register-plugin-slash-command',
-      args: [this.baseInfo.id, [cmd, actions]]
+      args: [this.baseInfo.id, [tag, actions]]
     })
 
     return false

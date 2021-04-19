@@ -80,7 +80,9 @@ interface IAppProxy {
 interface IEditorProxy {
   getCurrentPageBlocksTree: <T = any> () => Promise<T>
 
-  registerSlashCommand (this: LSPluginUser, cmd: string, actions: Array<SlashCommandAction>): boolean
+  registerSlashCommand (this: LSPluginUser, tag: string, actions: Array<SlashCommandAction>): boolean
+
+  registerBlockContextMenu (this: LSPluginUser, tag: string, action: () => void): boolean
 }
 
 interface IDBProxy {
