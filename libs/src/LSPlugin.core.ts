@@ -395,20 +395,21 @@ class PluginLocal
       }
       return useFileProtocol ? loc : loc.replace('file:', 'assets:')
     }
+    const validateMain = (main) => main && /\.(js|html)$/.test(main)
 
     // Entry from main
-    if (pkg.main) {
+    if (validateMain(pkg.main)) {
       this._options.entry = makeFullUrl(pkg.main, true)
+
+      if (logseq.mode) {
+        this._options.mode = logseq.mode
+      }
     }
 
     const icon = logseq.icon || pkg.icon
 
     if (icon) {
       this._options.icon = makeFullUrl(icon)
-    }
-
-    if (logseq.mode) {
-      this._options.mode = logseq.mode
     }
 
     // TODO: strategy for Logseq plugins center
