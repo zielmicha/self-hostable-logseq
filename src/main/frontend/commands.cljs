@@ -4,6 +4,7 @@
             [frontend.state :as state]
             [frontend.search :as search]
             [frontend.config :as config]
+            [frontend.db.utils :as db-util]
             [clojure.string :as string]
             [goog.dom :as gdom]
             [goog.object :as gobj]
@@ -25,11 +26,11 @@
 (defonce *current-command (atom nil))
 
 (def link-steps [[:editor/input (str slash "link")]
-                 [:editor/show-input [{:command :link
-                                       :id :link
+                 [:editor/show-input [{:command     :link
+                                       :id          :link
                                        :placeholder "Link"}
-                                      {:command :link
-                                       :id :label
+                                      {:command     :link
+                                       :id          :label
                                        :placeholder "Label"}]]])
 
 (defn ->marker
@@ -54,9 +55,9 @@
 (defn embed-page
   []
   (conj
-   [[:editor/input "{{embed [[]]}}" {:last-pattern slash
-                                     :backward-pos 4}]]
-   [:editor/search-page :embed]))
+    [[:editor/input "{{embed [[]]}}" {:last-pattern slash
+                                      :backward-pos 4}]]
+    [:editor/search-page :embed]))
 
 (defn embed-block
   []
@@ -297,7 +298,7 @@
 (defn insert-before!
   [id value
    {:keys [backward-pos forward-pos check-fn]
-    :as option}]
+    :as   option}]
   (let [input (gdom/getElement id)
         edit-content (gobj/get input "value")
         current-pos (:pos (util/get-caret-pos input))
@@ -317,7 +318,7 @@
 (defn simple-replace!
   [id value selected
    {:keys [backward-pos forward-pos check-fn]
-    :as option}]
+    :as   option}]
   (let [selected? (not (string/blank? selected))
         input (gdom/getElement id)
         edit-content (gobj/get input "value")
@@ -499,3 +500,10 @@
   [vector format]
   (doseq [step vector]
     (handle-step step format)))
+
+(defn exec-plugin-simple-command!
+  [pid {:keys [key label block-id] :as cmd} action]
+  (let [format (and block-id (:block/format (db-util/pull [:block/uuid block-id])))
+        inputs (vector (concat action [cmd {:pid pid}]))]
+    (js/console.log (clj->js inputs))
+    (handle-steps inputs format)))

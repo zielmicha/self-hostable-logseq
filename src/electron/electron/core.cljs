@@ -181,7 +181,7 @@
 
                ;; main window events
                (.on win "close" (fn [e]
-                                  (and prod? (.preventDefault e))
+                                  (.preventDefault e)
                                   (let [web-contents (. win -webContents)]
                                     (.send web-contents "persistent-dbs"))
                                   (async/go

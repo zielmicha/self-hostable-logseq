@@ -26,16 +26,28 @@
   (and lsp-enabled? (js/LSPluginCore.hostMounted)))
 
 (defn register-plugin-slash-command
-  [id [cmd actions]]
-  (if-let [id (keyword id)]
-    (when (contains? (:plugin/installed-plugins @state/state) id)
-      (do (swap! state/state update-in [:plugin/installed-commands id]
-                 (fnil merge {}) (hash-map cmd (mapv #(conj % {:pid id}) actions)))
-          true))))
+  [pid [cmd actions]]
+  (prn (if-let [pid (keyword pid)]
+         (when (contains? (:plugin/installed-plugins @state/state) pid)
+           (do (swap! state/state update-in [:plugin/installed-commands pid]
+                      (fnil merge {}) (hash-map cmd (mapv #(conj % {:pid pid}) actions)))
+               true)))))
 
 (defn unregister-plugin-slash-command
-  [id]
-  (swap! state/state md/dissoc-in [:plugin/installed-commands (keyword id)]))
+  [pid]
+  (swap! state/state md/dissoc-in [:plugin/installed-commands (keyword pid)]))
+
+(defn register-plugin-simple-command
+  [pid {:keys [key label type] :as cmd}  action]
+  (if-let [pid (keyword pid)]
+    (when (contains? (:plugin/installed-plugins @state/state) pid)
+      (do (swap! state/state update-in [:plugin/simple-commands pid]
+                 (fnil conj []) [type cmd action pid])
+          true))))
+
+(defn unregister-plugin-simple-command
+  [pid [{:keys [key label]} action]]
+  (prn "unregister hello simple command"))
 
 (defn update-plugin-settings
   [id settings]
@@ -136,7 +148,7 @@
                (.on "unregistered" #((fn [pid]
                                        (let [pid (keyword pid)]
                                          ;; plugins
-                                         (swap! state/state util/dissoc-in [:plugin/installed-plugins (keyword pid)])
+                                         (swap! state/state md/dissoc-in [:plugin/installed-plugins (keyword pid)])
                                          ;; commands
                                          (unregister-plugin-slash-command pid)))))
 
