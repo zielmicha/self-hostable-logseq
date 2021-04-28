@@ -316,11 +316,10 @@ class PluginLocal
 
   async _setupUserSettings () {
     const { _options } = this
+    const key = _options.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + this.id
+    const logger = _options.logger = new PluginLogger('Loader')
 
     try {
-      const key = _options.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + this.id
-      const logger = _options.logger = new PluginLogger('Loader')
-
       const [userSettingsFilePath, userSettings] = await invokeHostExportedApi('load_plugin_user_settings', key)
       this._userSettingsFile = userSettingsFilePath
 
@@ -346,7 +345,7 @@ class PluginLocal
       })
     } catch (e) {
       debug('[load plugin user settings Error]', e)
-      this.logger?.error(e)
+      logger?.error(e)
     }
   }
 

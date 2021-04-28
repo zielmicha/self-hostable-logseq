@@ -4,6 +4,7 @@
             [frontend.util :as util]
             [frontend.fs :as fs]
             [frontend.handler.notification :as notifications]
+            [camel-snake-kebab.core :as csk]
             [frontend.state :as state]
             [medley.core :as md]
             [electron.ipc :as ipc]
@@ -38,6 +39,7 @@
   (swap! state/state md/dissoc-in [:plugin/installed-commands (keyword pid)]))
 
 (defn register-plugin-simple-command
+  ;; action => [:action-key :event-key]
   [pid {:keys [key label type] :as cmd}  action]
   (if-let [pid (keyword pid)]
     (when (contains? (:plugin/installed-plugins @state/state) pid)
@@ -46,8 +48,8 @@
           true))))
 
 (defn unregister-plugin-simple-command
-  [pid [{:keys [key label]} action]]
-  (prn "unregister hello simple command"))
+  [pid]
+  (swap! state/state md/dissoc-in [:plugin/simple-commands (keyword pid)]))
 
 (defn update-plugin-settings
   [id settings]
@@ -78,7 +80,8 @@
     (js-invoke js/LSPluginCore
                (str "hook" (string/capitalize (name tag)))
                (name type)
-               (bean/->js payload)
+               (if (map? payload)
+                 (bean/->js (into {} (for [[k v] payload] [(csk/->camelCase k) (if (uuid? v) (str v) v)]))))
                (if (keyword? plugin-id) (name plugin-id) plugin-id))))
 
 (defn hook-plugin-app
@@ -118,13 +121,7 @@
        [:span
         {:style
          {:color     "#aaa"
-          :font-size "58px"}} (or text "Loading ...")]])))
-
-;; demo plugin configures
-
-(defonce
-  a-themes-provider
-  {:url "/Users/charlie/Desktop/examples-0-themes"})
+          :font-size "38px"}} (or text "Loading ...")]])))
 
 (defn init-plugins
   [callback]
@@ -134,7 +131,7 @@
     (rum/mount
      (lsp-indicator) el))
 
-  (state/set-state! :plugin/indicator-text "⏳")
+  (state/set-state! :plugin/indicator-text "Loading...")
 
   (p/then
    (p/let [root (get-ls-dotdir-root)

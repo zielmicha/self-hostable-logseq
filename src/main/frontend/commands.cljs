@@ -55,9 +55,9 @@
 (defn embed-page
   []
   (conj
-    [[:editor/input "{{embed [[]]}}" {:last-pattern slash
-                                      :backward-pos 4}]]
-    [:editor/search-page :embed]))
+   [[:editor/input "{{embed [[]]}}" {:last-pattern slash
+                                     :backward-pos 4}]]
+   [:editor/search-page :embed]))
 
 (defn embed-block
   []
@@ -371,8 +371,8 @@
 
 (defmulti handle-step first)
 
-(defmethod handle-step :editor/hook [[_ event {:keys [pid]}]]
-  (plugin-handler/hook-plugin-editor event nil pid))
+(defmethod handle-step :editor/hook [[_ event {:keys [pid] :as payload}]]
+  (plugin-handler/hook-plugin-editor event payload pid))
 
 (defmethod handle-step :editor/input [[_ value option]]
   (when-let [input-id (state/get-edit-input-id)]
@@ -504,6 +504,5 @@
 (defn exec-plugin-simple-command!
   [pid {:keys [key label block-id] :as cmd} action]
   (let [format (and block-id (:block/format (db-util/pull [:block/uuid block-id])))
-        inputs (vector (concat action [cmd {:pid pid}]))]
-    (js/console.log (clj->js inputs))
+        inputs (vector (conj action (assoc cmd :pid pid)))]
     (handle-steps inputs format)))

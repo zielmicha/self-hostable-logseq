@@ -24,7 +24,7 @@ const debug = Debug('LSPlugin:user')
 
 const app: Partial<IAppProxy> = {}
 
-let registeredSlashCmdUid = 0
+let registeredCmdUid = 0
 
 const editor: Partial<IEditorProxy> = {
   registerSlashCommand (
@@ -48,12 +48,12 @@ const editor: Partial<IEditorProxy> = {
             fn = key
           }
 
-          const type = `SlashCommandHook${tag}${registeredSlashCmdUid}`
+          const eventKey = `SlashCommandHook${tag}${++registeredCmdUid}`
 
-          it[1] = type
+          it[1] = eventKey
 
           // register command listener
-          this.Editor['on' + type](fn)
+          this.Editor['on' + eventKey](fn)
           break
         default:
       }
@@ -64,6 +64,30 @@ const editor: Partial<IEditorProxy> = {
     this.caller?.call(`api:call`, {
       method: 'register-plugin-slash-command',
       args: [this.baseInfo.id, [tag, actions]]
+    })
+
+    return false
+  },
+
+  registerBlockContextMenu (
+    this: LSPluginUser,
+    tag: string,
+    action: () => void
+  ): boolean {
+    if (typeof action !== 'function') {
+      return false
+    }
+
+    const key = tag
+    const label = tag
+    const type = 'block-context-menu'
+    const eventKey = `SimpleCommandHook${tag}${++registeredCmdUid}`
+
+    this.Editor['on' + eventKey](action)
+
+    this.caller?.call(`api:call`, {
+      method: 'register-plugin-simple-command',
+      args: [this.baseInfo.id, [{ key, label, type }, ['editor/hook', eventKey]]]
     })
 
     return false

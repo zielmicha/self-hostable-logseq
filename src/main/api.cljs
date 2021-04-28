@@ -109,10 +109,16 @@
 
 (def ^:export register_plugin_slash_command
   (fn [pid ^js cmd-actions]
-    (let [[cmd actions] (bean/->clj cmd-actions)]
+    (when-let [[cmd actions] (bean/->clj cmd-actions)]
       (plugin-handler/register-plugin-slash-command
        pid [cmd (mapv #(into [(keyword (first %))]
                              (rest %)) actions)]))))
+
+(def ^:export register_plugin_simple_command
+  (fn [pid ^js cmd-action]
+    (when-let [[cmd action] (bean/->clj cmd-action)]
+      (plugin-handler/register-plugin-simple-command
+       pid cmd (assoc action 0 (keyword (first action)))))))
 
 ;; app
 (def ^:export push_state

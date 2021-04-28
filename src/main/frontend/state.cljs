@@ -1022,7 +1022,7 @@
 
 (defn get-plugins-commands-with-type
   [type]
-  (filterv #(= (first %) (name type))
+  (filterv #(= (keyword (first %)) (keyword type))
            (apply concat (vals (:plugin/simple-commands @state)))))
 
 (defn get-scheduled-future-days
