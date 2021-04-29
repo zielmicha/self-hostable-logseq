@@ -142,12 +142,12 @@
                       (register-plugin
                        (bean/->clj (.parse js/JSON (.stringify js/JSON pl))))))
 
-               (.on "unregistered" #((fn [pid]
-                                       (let [pid (keyword pid)]
-                                         ;; plugins
-                                         (swap! state/state md/dissoc-in [:plugin/installed-plugins (keyword pid)])
-                                         ;; commands
-                                         (unregister-plugin-slash-command pid)))))
+               (.on "unregistered" (fn [pid]
+                                     (let [pid (keyword pid)]
+                                        ;; plugins
+                                       (swap! state/state md/dissoc-in [:plugin/installed-plugins (keyword pid)])
+                                        ;; commands
+                                       (unregister-plugin-slash-command pid))))
 
                (.on "theme-changed" (fn [^js themes]
                                       (swap! state/state assoc :plugin/installed-themes
