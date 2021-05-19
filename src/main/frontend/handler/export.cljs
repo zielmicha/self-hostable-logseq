@@ -71,15 +71,7 @@
          {:properties properties
           :blocks blocks}))))))
 
-(defn export-repo-as-json!
-  [repo]
-  (when-let [db (db/get-conn repo)]
-    (let [db-json (db/db->json db)
-          data-str (str "data:text/json;charset=utf-8," (js/encodeURIComponent db-json))]
-      (when-let [anchor (gdom/getElement "download-as-json")]
-        (.setAttribute anchor "href" data-str)
-        (.setAttribute anchor "download" (str (last (string/split repo #"/")) ".json"))
-        (.click anchor)))))
+
 
 (defn export-repo-as-edn!
   [repo]
@@ -498,3 +490,25 @@
             (.setAttribute anchor "href" (js/window.URL.createObjectURL zipfile))
             (.setAttribute anchor "download" (.-name zipfile))
             (.click anchor)))))))
+
+
+(defn export-repo-as-json!
+  [repo]
+  (let [db-json
+        (clj->js
+         {:pages
+          (map (fn [{:keys [names]}]
+                 (let [page (get names 1)]
+                   {:title
+                    page
+                    :content
+                    (outliner-tree/blocks->vec-tree
+                     (db/get-page-blocks-no-cache page) page)}))
+
+               (get-file-contents-with-suffix (state/get-current-repo)))})
+        data-str (str "data:text/json;charset=utf-8," (js/encodeURIComponent (js/JSON.stringify db-json)))]
+    (println db-json)
+    (when-let [anchor (gdom/getElement "download-as-json")]
+      (.setAttribute anchor "href" data-str)
+      (.setAttribute anchor "download" (str (last (string/split repo #"/")) ".json"))
+      (.click anchor))))

@@ -24,15 +24,20 @@
         [:li.mb-4
          [:a.font-medium {:on-click #(export/convert-repo-markdown-v2! current-repo)}
           (t :convert-markdown)]]
+
+        [:li.mb-4
+         [:a.font-medium {:on-click #(export/export-repo-as-json! current-repo)}
+          (t :export-json)]]
+
         [:li.mb-4
          [:a.font-medium {:on-click #(export/export-repo-as-edn! current-repo)}
           (t :export-edn)]]]
        [:a#download-as-edn.hidden]
+       [:a#download-as-json.hidden]
        [:a#download-as-html.hidden]
        [:a#download-as-zip.hidden]
        [:a#export-as-markdown.hidden]
-       [:a#convert-markdown-to-unordered-list-or-heading.hidden]
-       ])))
+       [:a#convert-markdown-to-unordered-list-or-heading.hidden]])))
 
 
 (rum/defc export-page
