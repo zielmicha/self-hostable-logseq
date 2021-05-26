@@ -23,6 +23,7 @@
             [frontend.commands :as commands
              :refer [*show-commands
                      *hovering-command
+                     *first-command-group
                      *matched-commands
                      *slash-caret-pos
                      *angle-bracket-caret-pos
@@ -49,12 +50,16 @@
 
           (fn [item]
             (let [name (first item)]
+
               [:div
                {:on-mouse-leave
                 (fn [] (reset! *hovering-command nil))
                 :on-mouse-enter
                 (fn [] (reset! *hovering-command item))}
                name]))
+
+          :get-group-name
+          (fn [item] (get *first-command-group (first item)))
 
           :on-chosen (fn [chosen-item]
                        (let [item-name (first chosen-item)
@@ -298,15 +303,15 @@
         x-overflow? (if (and (seq rect) (> vw-width max-width))
                       (let [delta-width (- vw-width (+ (:left rect) left))]
                         (< delta-width (* max-width 0.5))))] ;; FIXME: for translateY layer
-    [:div
-     {:style (merge)}
 
-     [:div.absolute.rounded-md.shadow-lg.absolute-modal
+    [:div.flex.flex-row.absolute.absolute-modal
+     {:style {:top (+ top offset-top)}}
+
+     [:div.rounded-md.shadow-lg.absolute-modal__primary
       {:class (if x-overflow? "is-overflow-vw-x" "")
        :on-mouse-down (fn [e] (.stopPropagation e))
        :style (merge
-               {:top        (+ top offset-top)
-                :max-height to-max-height
+               {:max-height to-max-height
                 :max-width 700
                ;; TODO: auto responsive fixed size
                 :min-width 300
@@ -318,7 +323,8 @@
                  {:left left}))}
       cp]
 
-     [:div secondary-cp]]))
+     (when secondary-cp
+       [:div.w-60.flex.items-center.absolute-modal__secondary [:div.absolute-modal__secondary-content secondary-cp]])]))
 
 (rum/defc transition-cp < rum/reactive
   [cp set-default-width? pos secondary-cp]
@@ -413,7 +419,8 @@
           :as   option} id config]
   (let [content (state/get-edit-content)
         heading-level (get state ::heading-level)
-        hovering-item (util/react *hovering-command)]
+        hovering-item (util/react *hovering-command)
+        command-doc (get hovering-item 2)]
     [:div.editor-inner {:class (if block "block-editor" "non-block-editor")}
      (when config/mobile? (mobile-bar state id))
      (ui/ls-textarea
@@ -432,7 +439,7 @@
       (commands id format)
       true
       *slash-caret-pos
-      (when hovering-item [:div (first hovering-item)]))
+      (when command-doc [:div command-doc]))
 
      (transition-cp
       (block-commands id format)

@@ -34,7 +34,7 @@
   }
 }
 
-.absolute-modal {
+.absolute-modal__primary {
   overflow: auto;
   background: var(--ls-primary-background-color);
 
@@ -43,8 +43,15 @@
   }
 }
 
+.absolute-modal__secondary {
+  &-content {
+    background: var(--ls-secondary-background-color);
+    @apply p-8;
+  }
+}
+
 .is-mobile {
-  .absolute-modal {
+  .absolute-modal__primary {
     &.is-overflow-vw-x {
       transform: translateX(-1%);
     }
