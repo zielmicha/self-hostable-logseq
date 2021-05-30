@@ -14,16 +14,14 @@
 ;; :TODO: How to do this?
 ;; (defonce desktop? ^boolean goog.DESKTOP)
 
-(def app-name "logseq")
+(def app-name "self-hosted-logseq")
 (def website
   (if dev?
     "http://localhost:3000"
-    (util/format "https://%s.com" app-name)))
+    (util/format "https://%s.invalid" app-name)))
 
 (def api
-  (if dev?
-    "http://localhost:3000/api/v1/"
-    (str website "/api/v1/")))
+  "/api/v1/")
 
 (def asset-domain (util/format "https://asset.%s.com"
                                app-name))

@@ -63,8 +63,7 @@
                (if local?
                  [:a
                   (config/get-local-dir url)]
-                 [:a {:target "_blank"
-                      :href url}
+                 [:a {}
                   (db/get-repo-path url)])
                [:div.controls
                 (when (e/encrypted-db? url)
@@ -230,8 +229,7 @@
                  (last (string/split repo-name #"/"))
                  repo-name)]
               [:a.fade-link#repo-name
-               {:href current-repo
-                :target "_blank"}
+               {}
                repo-name]))
 
           :else
